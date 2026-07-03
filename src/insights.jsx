@@ -1,12 +1,29 @@
 import { theme, fontSans } from "./theme.js";
 import { formatDuration, daysSince, isSameDay, isSameMonth } from "./format.js";
 import { ProgressBar } from "./components/primitives.jsx";
+import { MoodTrendChart } from "./components/MoodTrendChart.jsx";
 
 const POSITIVE_MOODS = ["Zen", "Vibing", "Connected", "Energized"];
 const NEGATIVE_MOODS = ["Overwhelmed"];
 
 const tally = (values) => values.reduce((acc, v) => ((acc[v] = (acc[v] || 0) + 1), acc), {});
 const topEntry = (counts) => Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+
+function computeMoodTrend(completed, weeks = 8) {
+  const buckets = Array.from({ length: weeks }, () => ({ sum: 0, n: 0 }));
+  completed.forEach((s) => {
+    if (!s.moodsPost?.length) return;
+    const weeksAgo = Math.floor(daysSince(s.startTime) / 7);
+    if (weeksAgo < 0 || weeksAgo >= weeks) return;
+    const net =
+      s.moodsPost.filter((m) => POSITIVE_MOODS.includes(m)).length -
+      s.moodsPost.filter((m) => NEGATIVE_MOODS.includes(m)).length;
+    const bucket = buckets[weeks - 1 - weeksAgo];
+    bucket.sum += net;
+    bucket.n++;
+  });
+  return buckets.map((b) => (b.n ? b.sum / b.n : null));
+}
 
 export function computeInsights(sessions, people) {
   if (sessions.length === 0) return { cards: [], nudges: [] };
@@ -102,6 +119,24 @@ export function computeInsights(sessions, people) {
           <ProgressBar key={personId} label={name} pct={(stat.good / stat.total) * 100} sub={`${stat.good}/${stat.total} good`} tone="rose" />
         );
       }),
+    });
+  }
+
+  const moodTrend = computeMoodTrend(completed);
+  const moodTrendSignal = moodTrend.filter((v) => v !== null);
+  if (moodTrendSignal.length >= 2) {
+    const direction =
+      moodTrendSignal[moodTrendSignal.length - 1] > moodTrendSignal[0]
+        ? "Improving"
+        : moodTrendSignal[moodTrendSignal.length - 1] < moodTrendSignal[0]
+        ? "Declining"
+        : "Steady";
+    cards.push({
+      id: "moodTrend",
+      title: "Mood Trend",
+      value: direction,
+      tone: "sage",
+      detail: <MoodTrendChart values={moodTrend} />,
     });
   }
 
