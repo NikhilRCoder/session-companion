@@ -3,7 +3,7 @@ import { getSessions, getPeople, getPlaces, saveSessions, savePeople, savePlaces
 export function exportBackup() {
   const data = {
     exportedAt: new Date().toISOString(),
-    version: 3,
+    version: 4,
     sessions: getSessions(),
     people: getPeople(),
     places: getPlaces(),

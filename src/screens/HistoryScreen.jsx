@@ -1,20 +1,40 @@
 import { useState } from "react";
 import { theme, fontSerif, fontSans } from "../theme.js";
-import { getSessions } from "../storage.js";
+import { getSessions, saveSessions } from "../storage.js";
 import { formatDuration, formatDate } from "../format.js";
 import { Screen, BackLink } from "../components/primitives.jsx";
 import { SessionSummary } from "./SessionSummary.jsx";
 
 export function HistoryScreen() {
-  const [sessions] = useState(getSessions());
-  const [selected, setSelected] = useState(null);
+  const [sessions, setSessions] = useState(getSessions());
+  const [selectedId, setSelectedId] = useState(null);
+  const selected = sessions.find((s) => s.id === selectedId) || null;
+
+  const handleEdit = (id, patch) => {
+    const updated = sessions.map((s) => (s.id === id ? { ...s, ...patch } : s));
+    setSessions(updated);
+    saveSessions(updated);
+  };
+
+  const handleDelete = (id) => {
+    const updated = sessions.filter((s) => s.id !== id);
+    setSessions(updated);
+    saveSessions(updated);
+    setSelectedId(null);
+  };
 
   if (selected) {
     return (
       <Screen>
-        <BackLink onBack={() => setSelected(null)} label="← All Sessions" />
+        <BackLink onBack={() => setSelectedId(null)} label="← All Sessions" />
         <div style={{ flex: 1, overflowY: "auto" }}>
-          <SessionSummary session={selected} onDone={() => setSelected(null)} />
+          <SessionSummary
+            key={selected.id}
+            session={selected}
+            onDone={() => setSelectedId(null)}
+            onEdit={(patch) => handleEdit(selected.id, patch)}
+            onDelete={() => handleDelete(selected.id)}
+          />
         </div>
       </Screen>
     );
@@ -31,14 +51,14 @@ export function HistoryScreen() {
         </p>
       ) : (
         <div style={{ flex: 1, overflowY: "auto" }}>
-          {sessions.map((session, i) => {
+          {sessions.map((session) => {
             const duration = session.endTime
               ? formatDuration(new Date(session.endTime) - new Date(session.startTime))
               : "Incomplete";
             return (
               <button
-                key={i}
-                onClick={() => setSelected(session)}
+                key={session.id}
+                onClick={() => setSelectedId(session.id)}
                 style={{
                   width: "100%",
                   textAlign: "left",

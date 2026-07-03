@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { googleFontsUrl, theme } from "./theme.js";
-import { getLiveSession, setLiveSession as persistLiveSession, getSessions, saveSessions } from "./storage.js";
+import { getLiveSession, setLiveSession as persistLiveSession, getSessions, saveSessions, makeId } from "./storage.js";
 import { PRE_STEPS, POST_STEPS } from "./wizardSteps.js";
 import { WizardStep } from "./components/WizardStep.jsx";
 import { BottomNav } from "./components/BottomNav.jsx";
@@ -87,7 +87,7 @@ export default function App() {
   };
 
   const finishSession = (extra) => {
-    const completed = { ...liveSession, ...postAnswers, ...extra, endTime: new Date().toISOString() };
+    const completed = { id: makeId(), ...liveSession, ...postAnswers, ...extra, endTime: new Date().toISOString() };
     saveSessions([completed, ...getSessions()]);
     setCompletedSession(completed);
     setLiveSessionState(null);

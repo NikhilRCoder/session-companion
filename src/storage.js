@@ -20,7 +20,17 @@ export const safeStorage = {
   },
 };
 
-export const getSessions = () => safeStorage.get(KEYS.log, []);
+export const getSessions = () => {
+  const sessions = safeStorage.get(KEYS.log, []);
+  let mutated = false;
+  const withIds = sessions.map((s) => {
+    if (s.id) return s;
+    mutated = true;
+    return { ...s, id: makeId() };
+  });
+  if (mutated) saveSessions(withIds);
+  return withIds;
+};
 export const saveSessions = (sessions) => safeStorage.set(KEYS.log, sessions);
 
 export const getPeople = () => safeStorage.get(KEYS.people, []);
