@@ -3,9 +3,10 @@ import { theme, fontSerif, fontSans } from "../theme.js";
 import { getPlaces, savePlaces } from "../storage.js";
 import { Screen, BackLink, Eyebrow, PrimaryButton } from "../components/primitives.jsx";
 
-export function PlaceStep({ place, setPlace, onBack, onNext }) {
+export function PlaceStep({ place, setPlace, cost, setCost, onBack, onNext }) {
   const [places, setPlaces] = useState(getPlaces());
   const [input, setInput] = useState(place || "");
+  const [costInput, setCostInput] = useState(typeof cost === "number" ? String(cost) : "");
 
   const pickPlace = (name) => {
     setPlace(name);
@@ -14,13 +15,13 @@ export function PlaceStep({ place, setPlace, onBack, onNext }) {
 
   const confirm = () => {
     const trimmed = input.trim();
-    if (!trimmed) return onNext();
-    if (!places.includes(trimmed)) {
+    if (trimmed && !places.includes(trimmed)) {
       const updated = [...places, trimmed];
       setPlaces(updated);
       savePlaces(updated);
     }
     setPlace(trimmed);
+    setCost(costInput.trim() === "" ? undefined : Number(costInput));
     onNext();
   };
 
@@ -38,6 +39,27 @@ export function PlaceStep({ place, setPlace, onBack, onNext }) {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="Type a place name..."
+        style={{
+          width: "100%",
+          background: theme.bgCard,
+          border: `1.5px solid ${theme.line}`,
+          borderRadius: 16,
+          padding: "16px 18px",
+          color: theme.bone,
+          fontSize: 16,
+          fontFamily: fontSans,
+          boxSizing: "border-box",
+          marginBottom: 14,
+        }}
+      />
+      <input
+        value={costInput}
+        onChange={(e) => setCostInput(e.target.value)}
+        placeholder="Amount spent (optional)"
+        type="number"
+        inputMode="decimal"
+        step="0.01"
+        min="0"
         style={{
           width: "100%",
           background: theme.bgCard,

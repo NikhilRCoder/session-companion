@@ -1,5 +1,5 @@
 import { theme, fontSans } from "./theme.js";
-import { formatDuration, daysSince, isSameDay } from "./format.js";
+import { formatDuration, daysSince, isSameDay, isSameMonth } from "./format.js";
 import { ProgressBar } from "./components/primitives.jsx";
 
 const POSITIVE_MOODS = ["Zen", "Vibing", "Connected", "Energized"];
@@ -102,6 +102,24 @@ export function computeInsights(sessions, people) {
           <ProgressBar key={personId} label={name} pct={(stat.good / stat.total) * 100} sub={`${stat.good}/${stat.total} good`} tone="rose" />
         );
       }),
+    });
+  }
+
+  const costSessions = completed.filter((s) => typeof s.cost === "number");
+  if (costSessions.length > 0) {
+    const avgCost = costSessions.reduce((sum, s) => sum + s.cost, 0) / costSessions.length;
+    const thisMonthSessions = costSessions.filter((s) => isSameMonth(s.startTime, new Date()));
+    const monthTotal = thisMonthSessions.reduce((sum, s) => sum + s.cost, 0);
+    cards.push({
+      id: "spend",
+      title: "Average Spend",
+      value: `$${avgCost.toFixed(2)}`,
+      tone: "gold",
+      detail: (
+        <p style={{ fontFamily: fontSans, color: theme.fade, fontSize: 13.5, lineHeight: 1.6 }}>
+          ${monthTotal.toFixed(2)} this month across {thisMonthSessions.length} session{thisMonthSessions.length === 1 ? "" : "s"}.
+        </p>
+      ),
     });
   }
 

@@ -18,3 +18,9 @@ export const daysSince = (dateLike) =>
   Math.floor((Date.now() - new Date(dateLike).getTime()) / 864e5);
 
 export const isSameDay = (a, b) => new Date(a).toDateString() === new Date(b).toDateString();
+
+export const isSameMonth = (a, b) => {
+  const da = new Date(a);
+  const db = new Date(b);
+  return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth();
+};

@@ -42,6 +42,7 @@ export default function App() {
   const [postStep, setPostStep] = useState(0);
   const [quality, setQuality] = useState({});
   const [place, setPlace] = useState("");
+  const [cost, setCost] = useState(undefined);
   const [reflection, setReflection] = useState("");
   const [completedSession, setCompletedSession] = useState(null);
 
@@ -82,6 +83,7 @@ export default function App() {
     setPostStep(0);
     setQuality({});
     setPlace("");
+    setCost(undefined);
     setReflection("");
     setScreen("post");
   };
@@ -188,6 +190,8 @@ export default function App() {
       <PlaceStep
         place={place}
         setPlace={setPlace}
+        cost={cost}
+        setCost={setCost}
         onBack={() => setScreen((liveSession?.peopleIds || []).length > 0 ? "interactionQuality" : "post")}
         onNext={() => setScreen("reflection")}
       />
@@ -198,7 +202,7 @@ export default function App() {
         value={reflection}
         onChange={setReflection}
         onBack={() => setScreen("place")}
-        onNext={() => finishSession({ interactionQuality: quality, place, reflection })}
+        onNext={() => finishSession({ interactionQuality: quality, place, cost, reflection })}
         icon="◐"
         eyebrow="Last Thing"
         title="Anything coming up?"

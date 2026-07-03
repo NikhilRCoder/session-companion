@@ -87,6 +87,30 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
               }}
             />
           </EditField>
+          <EditField label="Amount Spent">
+            <input
+              value={typeof draft.cost === "number" ? String(draft.cost) : ""}
+              onChange={(e) =>
+                setDraft({ ...draft, cost: e.target.value.trim() === "" ? undefined : Number(e.target.value) })
+              }
+              placeholder="Amount spent (optional)"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0"
+              style={{
+                width: "100%",
+                background: theme.bgCard,
+                border: `1.5px solid ${theme.line}`,
+                borderRadius: 14,
+                padding: "13px 16px",
+                color: theme.bone,
+                fontSize: 15,
+                fontFamily: fontSans,
+                boxSizing: "border-box",
+              }}
+            />
+          </EditField>
           <EditField label="Intensity">
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {optionsFor("intensity").map((opt) => (
@@ -151,6 +175,7 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
           {session.format && <StatRow label="Format" value={session.format} />}
           {session.setting && <StatRow label="Setting" value={session.setting} />}
           {session.place && <StatRow label="Place" value={session.place} />}
+          {typeof session.cost === "number" && <StatRow label="Amount Spent" value={`$${session.cost.toFixed(2)}`} />}
         </Card>
         {(session.moodsPre?.length || session.moodsPost?.length) ? (
           <Card>
