@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { theme, fontSerif, fontSans } from "../theme.js";
-import { getPlaces, savePlaces } from "../storage.js";
+import { getPlaces, savePlaces, getSessions } from "../storage.js";
+import { nearestKnownPlace } from "../geo.js";
 import { Screen, BackLink, Eyebrow, PrimaryButton } from "../components/primitives.jsx";
 
-export function PlaceStep({ place, setPlace, cost, setCost, onBack, onNext }) {
+export function PlaceStep({ place, setPlace, cost, setCost, sessionLocation, onBack, onNext }) {
   const [places, setPlaces] = useState(getPlaces());
   const [input, setInput] = useState(place || "");
   const [costInput, setCostInput] = useState(typeof cost === "number" ? String(cost) : "");
+  const [suggestion] = useState(() =>
+    sessionLocation ? nearestKnownPlace(getSessions(), sessionLocation) : null
+  );
 
   const pickPlace = (name) => {
     setPlace(name);
@@ -74,6 +78,27 @@ export function PlaceStep({ place, setPlace, cost, setCost, onBack, onNext }) {
         }}
       />
       <div style={{ flex: 1, overflowY: "auto" }}>
+        {suggestion && !input && (
+          <div style={{ marginBottom: 14 }}>
+            <Eyebrow tone="rose">Near your usual spot</Eyebrow>
+            <button
+              onClick={() => pickPlace(suggestion.place)}
+              style={{
+                padding: "9px 14px",
+                borderRadius: 999,
+                fontFamily: fontSans,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                border: `1.5px solid ${theme.rose}`,
+                background: `${theme.rose}1a`,
+                color: theme.rose,
+              }}
+            >
+              {suggestion.place}
+            </button>
+          </div>
+        )}
         {places.length > 0 && <Eyebrow tone="rose">Saved Places</Eyebrow>}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {places.map((name) => (

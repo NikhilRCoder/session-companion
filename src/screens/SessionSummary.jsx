@@ -2,6 +2,7 @@ import { useState } from "react";
 import { theme, fontSerif, fontSans } from "../theme.js";
 import { getPeople } from "../storage.js";
 import { formatDuration, formatDate } from "../format.js";
+import { formatCoords } from "../geo.js";
 import { PRE_STEPS, POST_STEPS } from "../wizardSteps.js";
 import { Screen, Eyebrow, Card, StatRow, TextArea, PrimaryButton } from "../components/primitives.jsx";
 
@@ -175,6 +176,21 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
           {session.format && <StatRow label="Format" value={session.format} />}
           {session.setting && <StatRow label="Setting" value={session.setting} />}
           {session.place && <StatRow label="Place" value={session.place} />}
+          {session.location && (
+            <StatRow
+              label="Location"
+              value={
+                <a
+                  href={`https://maps.google.com/?q=${session.location.lat},${session.location.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "inherit", textDecoration: "underline", textDecorationColor: theme.line }}
+                >
+                  {formatCoords(session.location)} ↗
+                </a>
+              }
+            />
+          )}
           {typeof session.cost === "number" && <StatRow label="Amount Spent" value={`$${session.cost.toFixed(2)}`} />}
         </Card>
         {(session.moodsPre?.length || session.moodsPost?.length) ? (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { googleFontsUrl, theme } from "./theme.js";
 import { getLiveSession, setLiveSession as persistLiveSession, getSessions, saveSessions, makeId } from "./storage.js";
+import { captureLocation } from "./geo.js";
 import { PRE_STEPS, POST_STEPS } from "./wizardSteps.js";
 import { WizardStep } from "./components/WizardStep.jsx";
 import { BottomNav } from "./components/BottomNav.jsx";
@@ -66,14 +67,21 @@ export default function App() {
   };
 
   const beginSession = () => {
-    setLiveSessionState({
+    const live = {
       ...preAnswers,
       peopleIds,
       intention,
       notes: "",
       startTime: new Date().toISOString(),
-    });
+    };
+    setLiveSessionState(live);
     setScreen("active");
+    captureLocation().then((location) => {
+      if (!location) return;
+      setLiveSessionState((prev) =>
+        prev && prev.startTime === live.startTime ? { ...prev, location } : prev
+      );
+    });
   };
 
   const updateLiveNotes = (notes) => setLiveSessionState((prev) => ({ ...prev, notes }));
@@ -192,6 +200,7 @@ export default function App() {
         setPlace={setPlace}
         cost={cost}
         setCost={setCost}
+        sessionLocation={liveSession?.location}
         onBack={() => setScreen((liveSession?.peopleIds || []).length > 0 ? "interactionQuality" : "post")}
         onNext={() => setScreen("reflection")}
       />
