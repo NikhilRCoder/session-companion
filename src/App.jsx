@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { googleFontsUrl, theme } from "./theme.js";
-import { getLiveSession, setLiveSession as persistLiveSession, getSessions, saveSessions, makeId } from "./storage.js";
+import { getLiveSession, setLiveSession as persistLiveSession, getSessions, saveSessions, getFields, makeId } from "./storage.js";
+import { captureLocation } from "./geo.js";
 import { PRE_STEPS, POST_STEPS } from "./wizardSteps.js";
+import { customStepsFor, splitCustomAnswers } from "./customFields.js";
 import { WizardStep } from "./components/WizardStep.jsx";
 import { BottomNav } from "./components/BottomNav.jsx";
 import { PeoplePickerStep } from "./screens/PeoplePickerStep.jsx";
@@ -66,14 +68,23 @@ export default function App() {
   };
 
   const beginSession = () => {
-    setLiveSessionState({
-      ...preAnswers,
+    const { rest, custom } = splitCustomAnswers(preAnswers, PRE_STEPS, getFields());
+    const live = {
+      ...rest,
       peopleIds,
       intention,
       notes: "",
+      ...(Object.keys(custom).length ? { custom } : {}),
       startTime: new Date().toISOString(),
-    });
+    };
+    setLiveSessionState(live);
     setScreen("active");
+    captureLocation().then((location) => {
+      if (!location) return;
+      setLiveSessionState((prev) =>
+        prev && prev.startTime === live.startTime ? { ...prev, location } : prev
+      );
+    });
   };
 
   const updateLiveNotes = (notes) => setLiveSessionState((prev) => ({ ...prev, notes }));
@@ -89,7 +100,16 @@ export default function App() {
   };
 
   const finishSession = (extra) => {
-    const completed = { id: makeId(), ...liveSession, ...postAnswers, ...extra, endTime: new Date().toISOString() };
+    const { rest, custom: postCustom } = splitCustomAnswers(postAnswers, POST_STEPS, getFields());
+    const mergedCustom = { ...(liveSession?.custom || {}), ...postCustom };
+    const completed = {
+      id: makeId(),
+      ...liveSession,
+      ...rest,
+      ...extra,
+      ...(Object.keys(mergedCustom).length ? { custom: mergedCustom } : {}),
+      endTime: new Date().toISOString(),
+    };
     saveSessions([completed, ...getSessions()]);
     setCompletedSession(completed);
     setLiveSessionState(null);
@@ -105,15 +125,17 @@ export default function App() {
   };
 
   const showBottomNav = !HIDDEN_NAV_SCREENS.includes(screen);
+  const preSteps = [...PRE_STEPS, ...customStepsFor("pre")];
+  const postSteps = [...POST_STEPS, ...customStepsFor("post")];
 
   let body;
   if (screen === "pre") {
     body = (
       <WizardStep
-        steps={PRE_STEPS}
+        steps={preSteps}
         answers={preAnswers}
         setAnswers={setPreAnswers}
-        stepIndex={preStep}
+        stepIndex={Math.min(preStep, preSteps.length - 1)}
         setStepIndex={setPreStep}
         onFinish={() => setScreen("peoplePick")}
         onExitBack={() => setScreen("home")}
@@ -127,7 +149,7 @@ export default function App() {
         peopleIds={peopleIds}
         setPeopleIds={setPeopleIds}
         onBack={() => {
-          setPreStep(PRE_STEPS.length - 1);
+          setPreStep(preSteps.length - 1);
           setScreen("pre");
         }}
         onNext={() => setScreen("intention")}
@@ -160,10 +182,10 @@ export default function App() {
   } else if (screen === "post") {
     body = (
       <WizardStep
-        steps={POST_STEPS}
+        steps={postSteps}
         answers={postAnswers}
         setAnswers={setPostAnswers}
-        stepIndex={postStep}
+        stepIndex={Math.min(postStep, postSteps.length - 1)}
         setStepIndex={setPostStep}
         onFinish={() => setScreen((liveSession?.peopleIds || []).length > 0 ? "interactionQuality" : "place")}
         onExitBack={() => setScreen("active")}
@@ -179,7 +201,7 @@ export default function App() {
         quality={quality}
         setQuality={setQuality}
         onBack={() => {
-          setPostStep(POST_STEPS.length - 1);
+          setPostStep(postSteps.length - 1);
           setScreen("post");
         }}
         onNext={() => setScreen("place")}
@@ -192,6 +214,7 @@ export default function App() {
         setPlace={setPlace}
         cost={cost}
         setCost={setCost}
+        sessionLocation={liveSession?.location}
         onBack={() => setScreen((liveSession?.peopleIds || []).length > 0 ? "interactionQuality" : "post")}
         onNext={() => setScreen("reflection")}
       />

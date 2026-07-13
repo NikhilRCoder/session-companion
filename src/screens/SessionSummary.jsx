@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { theme, fontSerif, fontSans } from "../theme.js";
-import { getPeople } from "../storage.js";
+import { getPeople, getFields } from "../storage.js";
 import { formatDuration, formatDate } from "../format.js";
+import { formatCoords } from "../geo.js";
 import { PRE_STEPS, POST_STEPS } from "../wizardSteps.js";
 import { Screen, Eyebrow, Card, StatRow, TextArea, PrimaryButton } from "../components/primitives.jsx";
 
@@ -134,6 +135,49 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
           <EditField label="Reflection">
             <TextArea value={draft.reflection || ""} onChange={(e) => setDraft({ ...draft, reflection: e.target.value })} rows={3} />
           </EditField>
+          {Object.entries(draft.custom || {}).map(([fieldId, entry]) => {
+            if (!entry?.label) return null;
+            const setValue = (value) =>
+              setDraft({ ...draft, custom: { ...draft.custom, [fieldId]: { ...entry, value } } });
+            const liveOptions =
+              entry.type === "yesno"
+                ? ["Yes", "No"]
+                : entry.type === "choice"
+                ? getFields().find((f) => f.id === fieldId)?.options
+                : null;
+            return (
+              <EditField key={fieldId} label={entry.label}>
+                {liveOptions ? (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {liveOptions.map((opt) => (
+                      <EditChip key={opt} label={opt} selected={entry.value === opt} onTap={() => setValue(opt)} />
+                    ))}
+                  </div>
+                ) : entry.type === "number" ? (
+                  <input
+                    value={typeof entry.value === "number" ? String(entry.value) : ""}
+                    onChange={(e) => setValue(e.target.value.trim() === "" ? undefined : Number(e.target.value))}
+                    type="number"
+                    inputMode="decimal"
+                    step="0.01"
+                    style={{
+                      width: "100%",
+                      background: theme.bgCard,
+                      border: `1.5px solid ${theme.line}`,
+                      borderRadius: 14,
+                      padding: "13px 16px",
+                      color: theme.bone,
+                      fontSize: 15,
+                      fontFamily: fontSans,
+                      boxSizing: "border-box",
+                    }}
+                  />
+                ) : (
+                  <TextArea value={entry.value || ""} onChange={(e) => setValue(e.target.value)} rows={3} />
+                )}
+              </EditField>
+            );
+          })}
         </div>
         <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
           <PrimaryButton
@@ -175,6 +219,21 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
           {session.format && <StatRow label="Format" value={session.format} />}
           {session.setting && <StatRow label="Setting" value={session.setting} />}
           {session.place && <StatRow label="Place" value={session.place} />}
+          {session.location && (
+            <StatRow
+              label="Location"
+              value={
+                <a
+                  href={`https://maps.google.com/?q=${session.location.lat},${session.location.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "inherit", textDecoration: "underline", textDecorationColor: theme.line }}
+                >
+                  {formatCoords(session.location)} ↗
+                </a>
+              }
+            />
+          )}
           {typeof session.cost === "number" && <StatRow label="Amount Spent" value={`$${session.cost.toFixed(2)}`} />}
         </Card>
         {(session.moodsPre?.length || session.moodsPost?.length) ? (
@@ -232,6 +291,23 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
             <p style={{ fontFamily: fontSans, color: theme.fade, fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>
               {session.reflection}
             </p>
+          </Card>
+        )}
+        {session.custom && Object.keys(session.custom).length > 0 && (
+          <Card>
+            <Eyebrow>Custom</Eyebrow>
+            <div style={{ marginTop: 4 }}>
+              {Object.entries(session.custom).map(([fieldId, entry]) => {
+                if (!entry?.label) return null;
+                return entry.type === "text" ? (
+                  <p key={fieldId} style={{ fontFamily: fontSans, color: theme.fade, fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>
+                    {entry.label} — <span style={{ color: theme.bone }}>{String(entry.value)}</span>
+                  </p>
+                ) : (
+                  <StatRow key={fieldId} label={entry.label} value={String(entry.value)} />
+                );
+              })}
+            </div>
           </Card>
         )}
       </div>
