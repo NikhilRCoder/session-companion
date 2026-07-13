@@ -1,12 +1,13 @@
-import { getSessions, getPeople, getPlaces, saveSessions, savePeople, savePlaces } from "./storage.js";
+import { getSessions, getPeople, getPlaces, getFields, saveSessions, savePeople, savePlaces, saveFields } from "./storage.js";
 
 export function exportBackup() {
   const data = {
     exportedAt: new Date().toISOString(),
-    version: 4,
+    version: 5,
     sessions: getSessions(),
     people: getPeople(),
     places: getPlaces(),
+    fields: getFields(),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -27,6 +28,7 @@ export function importBackup(file, callback) {
       if (data.sessions) saveSessions(data.sessions);
       if (data.people) savePeople(data.people);
       if (data.places) savePlaces(data.places);
+      if (data.fields) saveFields(data.fields);
       callback(true);
     } catch {
       callback(false);

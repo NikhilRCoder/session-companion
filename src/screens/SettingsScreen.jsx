@@ -3,6 +3,7 @@ import { theme, fontSerif, fontSans } from "../theme.js";
 import { getPlaces, savePlaces } from "../storage.js";
 import { exportBackup, importBackup } from "../backup.js";
 import { Screen, BackLink, Eyebrow, Card, PrimaryButton } from "../components/primitives.jsx";
+import { CustomFieldsCard } from "./CustomFieldsCard.jsx";
 
 export function SettingsScreen({ onBack }) {
   const [places, setPlaces] = useState(getPlaces());
@@ -50,6 +51,7 @@ export function SettingsScreen({ onBack }) {
             )}
           </div>
         </Card>
+        <CustomFieldsCard />
         <Card>
           <Eyebrow tone="rose">Saved Places</Eyebrow>
           {places.length === 0 ? (

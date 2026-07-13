@@ -201,6 +201,28 @@ export function ProgressBar({ label, pct, tone = "sage", sub }) {
   );
 }
 
+export function ChoiceChip({ label, selected, onTap, tone = "rose" }) {
+  const accent = tone === "sage" ? theme.sage : theme.rose;
+  return (
+    <button
+      onClick={onTap}
+      style={{
+        padding: "9px 14px",
+        borderRadius: 999,
+        fontFamily: fontSans,
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: "pointer",
+        border: selected ? `1.5px solid ${accent}` : `1.5px solid ${theme.line}`,
+        background: selected ? `${accent}1a` : "transparent",
+        color: selected ? accent : theme.fade,
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
 export function Pill({ children }) {
   return (
     <span

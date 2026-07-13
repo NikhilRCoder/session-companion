@@ -3,6 +3,7 @@ export const KEYS = {
   people: "sc_people_v3",
   places: "sc_places_v3",
   live: "sc_live_v3",
+  fields: "sc_fields_v1",
 };
 
 export const safeStorage = {
@@ -38,6 +39,9 @@ export const savePeople = (people) => safeStorage.set(KEYS.people, people);
 
 export const getPlaces = () => safeStorage.get(KEYS.places, []);
 export const savePlaces = (places) => safeStorage.set(KEYS.places, places);
+
+export const getFields = () => safeStorage.get(KEYS.fields, []);
+export const saveFields = (fields) => safeStorage.set(KEYS.fields, fields);
 
 export const getLiveSession = () => safeStorage.get(KEYS.live, null);
 export const setLiveSession = (value) =>
