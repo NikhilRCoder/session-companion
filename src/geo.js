@@ -1,16 +1,18 @@
 const round5 = (n) => Math.round(n * 1e5) / 1e5;
 
+// Plain serializable point from a GeolocationPosition.
+export const toPoint = (pos) => ({
+  lat: round5(pos.coords.latitude),
+  lng: round5(pos.coords.longitude),
+  accuracy: Math.round(pos.coords.accuracy),
+});
+
 // Best-effort location fix. Resolves {lat, lng, accuracy} or null — never rejects.
 export function captureLocation({ timeoutMs = 10000, maximumAgeMs = 300000 } = {}) {
   return new Promise((resolve) => {
     if (!navigator.geolocation) return resolve(null);
     navigator.geolocation.getCurrentPosition(
-      (pos) =>
-        resolve({
-          lat: round5(pos.coords.latitude),
-          lng: round5(pos.coords.longitude),
-          accuracy: Math.round(pos.coords.accuracy),
-        }),
+      (pos) => resolve(toPoint(pos)),
       () => resolve(null),
       { enableHighAccuracy: false, timeout: timeoutMs, maximumAge: maximumAgeMs }
     );
@@ -44,4 +46,14 @@ export function nearestKnownPlace(sessions, coords, maxMeters = 150) {
 export function formatCoords({ lat, lng, accuracy }) {
   const decimals = accuracy > 500 ? 2 : accuracy > 50 ? 3 : 4;
   return `${lat.toFixed(decimals)}, ${lng.toFixed(decimals)}`;
+}
+
+export function totalDistance(track) {
+  let sum = 0;
+  for (let i = 1; i < track.length; i++) sum += distanceMeters(track[i - 1], track[i]);
+  return sum;
+}
+
+export function formatDistance(meters) {
+  return meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(1)} km`;
 }

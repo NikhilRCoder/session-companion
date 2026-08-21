@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { googleFontsUrl, theme } from "./theme.js";
 import { getLiveSession, setLiveSession as persistLiveSession, getSessions, saveSessions, getFields, makeId } from "./storage.js";
-import { captureLocation } from "./geo.js";
+import { captureLocation, toPoint, distanceMeters } from "./geo.js";
 import { PRE_STEPS, POST_STEPS } from "./wizardSteps.js";
 import { customStepsFor, splitCustomAnswers } from "./customFields.js";
 import { WizardStep } from "./components/WizardStep.jsx";
@@ -59,6 +59,39 @@ export default function App() {
     );
   }, [screen, preAnswers, preStep, peopleIds, intention, liveSession]);
 
+  const hasLiveSession = liveSession !== null;
+  useEffect(() => {
+    if (!hasLiveSession || !navigator.geolocation) return;
+    const appendPoint = (point) => {
+      if (!point || point.accuracy > 100) return;
+      setLiveSessionState((prev) => {
+        if (!prev) return prev;
+        const track = prev.track || [];
+        if (track.length >= 500) return prev;
+        const last = track[track.length - 1];
+        if (last && distanceMeters(last, point) < 25) return prev;
+        return { ...prev, track: [...track, point] };
+      });
+    };
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => appendPoint({ ...toPoint(pos), t: Date.now() }),
+      (err) => {
+        if (err.code === 1) navigator.geolocation.clearWatch(watchId);
+      },
+      { enableHighAccuracy: false, maximumAge: 15000 }
+    );
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        captureLocation({ maximumAgeMs: 0 }).then((p) => p && appendPoint({ ...p, t: Date.now() }));
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [hasLiveSession]);
+
   const startWizard = () => {
     setPreAnswers({});
     setPreStep(0);
@@ -82,7 +115,13 @@ export default function App() {
     captureLocation().then((location) => {
       if (!location) return;
       setLiveSessionState((prev) =>
-        prev && prev.startTime === live.startTime ? { ...prev, location } : prev
+        prev && prev.startTime === live.startTime
+          ? {
+              ...prev,
+              location,
+              track: prev.track?.length ? prev.track : [{ ...location, t: Date.now() }],
+            }
+          : prev
       );
     });
   };
@@ -214,7 +253,9 @@ export default function App() {
         setPlace={setPlace}
         cost={cost}
         setCost={setCost}
-        sessionLocation={liveSession?.location}
+        sessionLocation={
+          liveSession?.track?.length ? liveSession.track[liveSession.track.length - 1] : liveSession?.location
+        }
         onBack={() => setScreen((liveSession?.peopleIds || []).length > 0 ? "interactionQuality" : "post")}
         onNext={() => setScreen("reflection")}
       />

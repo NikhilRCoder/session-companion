@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { theme, fontSans } from "../theme.js";
 import { getPeople, vibrate } from "../storage.js";
 import { formatTime } from "../format.js";
+import { totalDistance, formatDistance } from "../geo.js";
 import { Screen, Eyebrow, Pill, TextArea, PrimaryButton } from "../components/primitives.jsx";
 import { TimerRing } from "../components/TimerRing.jsx";
 
@@ -30,6 +31,12 @@ export function ActiveSessionScreen({ live, onCheckIn, onEndDirect, onUpdateNote
           since {formatTime(live.startTime)}
           {live.returnTime ? ` · target ${live.returnTime}` : ""}
         </p>
+        {live.track?.length > 0 && (
+          <p style={{ fontFamily: fontSans, color: theme.faint, fontSize: 11.5, marginTop: 3 }}>
+            ◉ tracking · {live.track.length} point{live.track.length === 1 ? "" : "s"} ·{" "}
+            {formatDistance(totalDistance(live.track))}
+          </p>
+        )}
       </div>
       <div style={{ margin: "20px 0 26px" }}>
         <TimerRing elapsedMs={elapsedMs} />

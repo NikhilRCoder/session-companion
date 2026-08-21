@@ -2,11 +2,25 @@ import { useState } from "react";
 import { theme, fontSerif, fontSans } from "../theme.js";
 import { getPeople, getFields } from "../storage.js";
 import { formatDuration, formatDate } from "../format.js";
-import { formatCoords } from "../geo.js";
+import { formatCoords, totalDistance, formatDistance } from "../geo.js";
+import { TrackSketch } from "../components/TrackSketch.jsx";
 import { PRE_STEPS, POST_STEPS } from "../wizardSteps.js";
 import { Screen, Eyebrow, Card, StatRow, TextArea, PrimaryButton } from "../components/primitives.jsx";
 
 const optionsFor = (key) => (PRE_STEPS.find((s) => s.key === key) || POST_STEPS.find((s) => s.key === key))?.options || [];
+
+function MapLink({ point, children }) {
+  return (
+    <a
+      href={`https://maps.google.com/?q=${point.lat},${point.lng}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ color: "inherit", textDecoration: "underline", textDecorationColor: theme.line }}
+    >
+      {children}
+    </a>
+  );
+}
 
 function EditChip({ label, selected, onTap }) {
   return (
@@ -219,23 +233,33 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
           {session.format && <StatRow label="Format" value={session.format} />}
           {session.setting && <StatRow label="Setting" value={session.setting} />}
           {session.place && <StatRow label="Place" value={session.place} />}
-          {session.location && (
-            <StatRow
-              label="Location"
-              value={
-                <a
-                  href={`https://maps.google.com/?q=${session.location.lat},${session.location.lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: "inherit", textDecoration: "underline", textDecorationColor: theme.line }}
-                >
-                  {formatCoords(session.location)} ↗
-                </a>
-              }
-            />
+          {session.location && !(session.track?.length >= 2) && (
+            <StatRow label="Location" value={<MapLink point={session.location}>{formatCoords(session.location)} ↗</MapLink>} />
           )}
           {typeof session.cost === "number" && <StatRow label="Amount Spent" value={`$${session.cost.toFixed(2)}`} />}
         </Card>
+        {session.track?.length >= 2 && (
+          <Card>
+            <Eyebrow>Movement</Eyebrow>
+            <div style={{ marginTop: 10 }}>
+              <TrackSketch track={session.track} />
+              <StatRow label="Distance Moved" value={formatDistance(totalDistance(session.track))} />
+              <StatRow label="Track Points" value={session.track.length} />
+              <StatRow
+                label="Start"
+                value={<MapLink point={session.track[0]}>{formatCoords(session.track[0])} ↗</MapLink>}
+              />
+              <StatRow
+                label="End"
+                value={
+                  <MapLink point={session.track[session.track.length - 1]}>
+                    {formatCoords(session.track[session.track.length - 1])} ↗
+                  </MapLink>
+                }
+              />
+            </div>
+          </Card>
+        )}
         {(session.moodsPre?.length || session.moodsPost?.length) ? (
           <Card>
             <Eyebrow>Mood Shift</Eyebrow>
