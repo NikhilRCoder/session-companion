@@ -1,22 +1,25 @@
-import { theme, fontSerif, fontSans } from "../theme.js";
+import { theme, fontDisplay, fontSans } from "../theme.js";
 import { getSessions } from "../storage.js";
 import { formatDuration, formatDate, isSameDay } from "../format.js";
-import { Screen, Eyebrow, Card, PrimaryButton } from "../components/primitives.jsx";
+import { daysSinceLast, longestBreak, countSince, avgPerWeek } from "../stats.js";
+import { Screen, Eyebrow, Card, PrimaryButton, StatGrid, StatBox } from "../components/primitives.jsx";
 
 export function HomeScreen({ onStart, onSettings }) {
   const sessions = getSessions();
   const lastSession = sessions[0];
   const todayCount = sessions.filter((s) => isSameDay(s.startTime, new Date())).length;
+  const sinceLast = daysSinceLast(sessions);
+  const longest = longestBreak(sessions);
 
   return (
     <Screen>
       <div style={{ paddingTop: 14, marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <Eyebrow>Session Companion</Eyebrow>
-          <h1 style={{ fontFamily: fontSerif, fontSize: 42, fontWeight: 600, color: theme.bone, lineHeight: 1.05, letterSpacing: -0.5 }}>
+          <h1 style={{ fontFamily: fontDisplay, fontSize: 40, fontWeight: 800, color: theme.bone, lineHeight: 1.02, letterSpacing: -1 }}>
             Stay
             <br />
-            <em style={{ color: theme.sage, fontStyle: "italic" }}>grounded.</em>
+            <span style={{ color: theme.sage }}>grounded.</span>
           </h1>
         </div>
         <button
@@ -26,7 +29,19 @@ export function HomeScreen({ onStart, onSettings }) {
           ⚙
         </button>
       </div>
-      <div style={{ marginTop: 28 }}>
+      <div style={{ marginTop: 24 }}>
+        {sessions.length > 0 && (
+          <StatGrid>
+            <StatBox
+              label="Days Since Last"
+              value={sinceLast === 0 ? "Today" : sinceLast}
+              valueColor={sinceLast >= 3 ? theme.sage : undefined}
+            />
+            <StatBox label="Longest Break" value={`${longest}d`} />
+            <StatBox label="This Week" value={countSince(sessions, 7)} />
+            <StatBox label="Avg / Week" value={avgPerWeek(sessions).toFixed(1)} sub="last 4 weeks" />
+          </StatGrid>
+        )}
         {lastSession ? (
           <Card>
             <Eyebrow>Last Session</Eyebrow>

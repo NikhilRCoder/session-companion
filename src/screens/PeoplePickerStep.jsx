@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { theme, fontSerif, fontSans } from "../theme.js";
+import { theme, fontDisplay, fontSans } from "../theme.js";
 import { getPeople, savePeople, makeId } from "../storage.js";
 import { Screen, BackLink, Eyebrow, OptionButton, PrimaryButton } from "../components/primitives.jsx";
 
@@ -25,7 +25,7 @@ export function PeoplePickerStep({ peopleIds, setPeopleIds, onBack, onNext }) {
       <div style={{ marginBottom: 22, textAlign: "center" }}>
         <span style={{ fontSize: 28, color: theme.sageDim, display: "block", marginBottom: 10 }}>◍</span>
         <Eyebrow>Before You Begin</Eyebrow>
-        <h2 style={{ fontFamily: fontSerif, fontSize: 25, fontWeight: 600, color: theme.bone }}>Anyone with you?</h2>
+        <h2 style={{ fontFamily: fontDisplay, fontSize: 25, fontWeight: 600, color: theme.bone }}>Anyone with you?</h2>
       </div>
       <div style={{ flex: 1, overflowY: "auto" }}>
         {people.length === 0 && (
@@ -49,8 +49,8 @@ export function PeoplePickerStep({ peopleIds, setPeopleIds, onBack, onNext }) {
             style={{
               flex: 1,
               background: theme.bgCard,
-              border: `1.5px solid ${theme.line}`,
-              borderRadius: 14,
+              border: `1px solid ${theme.line}`,
+              borderRadius: 0,
               padding: "13px 16px",
               color: theme.bone,
               fontSize: 15,
@@ -64,7 +64,7 @@ export function PeoplePickerStep({ peopleIds, setPeopleIds, onBack, onNext }) {
               background: theme.sage,
               color: theme.sageDeep,
               border: "none",
-              borderRadius: 14,
+              borderRadius: 0,
               padding: "0 18px",
               fontFamily: fontSans,
               fontWeight: 700,

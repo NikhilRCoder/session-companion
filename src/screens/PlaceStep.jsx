@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { theme, fontSerif, fontSans } from "../theme.js";
+import { theme, fontDisplay, fontSans } from "../theme.js";
 import { getPlaces, savePlaces, getSessions } from "../storage.js";
 import { nearestKnownPlace } from "../geo.js";
 import { Screen, BackLink, Eyebrow, PrimaryButton } from "../components/primitives.jsx";
@@ -35,7 +35,7 @@ export function PlaceStep({ place, setPlace, cost, setCost, sessionLocation, onB
       <div style={{ marginBottom: 22, textAlign: "center" }}>
         <span style={{ fontSize: 28, color: theme.roseDim, display: "block", marginBottom: 10 }}>⌖</span>
         <Eyebrow tone="rose">Checking In</Eyebrow>
-        <h2 style={{ fontFamily: fontSerif, fontSize: 25, fontWeight: 600, color: theme.bone }}>
+        <h2 style={{ fontFamily: fontDisplay, fontSize: 25, fontWeight: 600, color: theme.bone }}>
           Where was this? <span style={{ color: theme.faint, fontSize: 15, fontFamily: fontSans }}>(optional)</span>
         </h2>
       </div>
@@ -46,8 +46,8 @@ export function PlaceStep({ place, setPlace, cost, setCost, sessionLocation, onB
         style={{
           width: "100%",
           background: theme.bgCard,
-          border: `1.5px solid ${theme.line}`,
-          borderRadius: 16,
+          border: `1px solid ${theme.line}`,
+          borderRadius: 0,
           padding: "16px 18px",
           color: theme.bone,
           fontSize: 16,
@@ -67,8 +67,8 @@ export function PlaceStep({ place, setPlace, cost, setCost, sessionLocation, onB
         style={{
           width: "100%",
           background: theme.bgCard,
-          border: `1.5px solid ${theme.line}`,
-          borderRadius: 16,
+          border: `1px solid ${theme.line}`,
+          borderRadius: 0,
           padding: "16px 18px",
           color: theme.bone,
           fontSize: 16,
@@ -85,12 +85,12 @@ export function PlaceStep({ place, setPlace, cost, setCost, sessionLocation, onB
               onClick={() => pickPlace(suggestion.place)}
               style={{
                 padding: "9px 14px",
-                borderRadius: 999,
+                borderRadius: 0,
                 fontFamily: fontSans,
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
-                border: `1.5px solid ${theme.rose}`,
+                border: `1px solid ${theme.rose}`,
                 background: `${theme.rose}1a`,
                 color: theme.rose,
               }}
@@ -107,12 +107,12 @@ export function PlaceStep({ place, setPlace, cost, setCost, sessionLocation, onB
               onClick={() => pickPlace(name)}
               style={{
                 padding: "9px 14px",
-                borderRadius: 999,
+                borderRadius: 0,
                 fontFamily: fontSans,
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
-                border: input === name ? `1.5px solid ${theme.rose}` : `1.5px solid ${theme.line}`,
+                border: input === name ? `1px solid ${theme.rose}` : `1px solid ${theme.line}`,
                 background: input === name ? `${theme.rose}1a` : theme.bgCard,
                 color: input === name ? theme.rose : theme.fade,
               }}

@@ -1,4 +1,4 @@
-import { theme, fontSans } from "../theme.js";
+import { theme, fontMono } from "../theme.js";
 import { vibrate } from "../storage.js";
 
 const TABS = [
@@ -12,11 +12,12 @@ export function BottomNav({ active, onChange }) {
   return (
     <div
       style={{
-        display: "flex",
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: 1,
+        background: theme.line,
         borderTop: `1px solid ${theme.line}`,
-        background: theme.bg,
-        paddingBottom: "max(8px, env(safe-area-inset-bottom))",
-        paddingTop: 8,
+        paddingBottom: 0,
       }}
     >
       {TABS.map((tab) => (
@@ -27,25 +28,26 @@ export function BottomNav({ active, onChange }) {
             onChange(tab.id);
           }}
           style={{
-            flex: 1,
-            background: "none",
+            background: theme.bg,
             border: "none",
+            borderTop: `2px solid ${active === tab.id ? theme.sage : "transparent"}`,
             cursor: "pointer",
-            padding: "6px 0",
+            padding: "9px 0 max(10px, env(safe-area-inset-bottom))",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             gap: 3,
           }}
         >
-          <span style={{ fontSize: 17, color: active === tab.id ? theme.sage : theme.faint }}>{tab.icon}</span>
+          <span style={{ fontSize: 16, color: active === tab.id ? theme.sage : theme.faint }}>{tab.icon}</span>
           <span
             style={{
-              fontFamily: fontSans,
-              fontSize: 10.5,
-              fontWeight: 600,
+              fontFamily: fontMono,
+              fontSize: 9.5,
+              fontWeight: 500,
               color: active === tab.id ? theme.sage : theme.faint,
-              letterSpacing: 0.3,
+              letterSpacing: 1.5,
+              textTransform: "uppercase",
             }}
           >
             {tab.label}

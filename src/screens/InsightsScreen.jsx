@@ -1,8 +1,19 @@
 import { useState } from "react";
-import { theme, fontSerif, fontSans } from "../theme.js";
+import { theme, fontDisplay, fontSans } from "../theme.js";
 import { getSessions, getPeople } from "../storage.js";
 import { computeInsights } from "../insights.jsx";
-import { Screen, Eyebrow, Card } from "../components/primitives.jsx";
+import { formatDuration } from "../format.js";
+import { totalDistance, formatDistance } from "../geo.js";
+import { countSince } from "../stats.js";
+import { Screen, Eyebrow, Card, StatGrid, StatBox } from "../components/primitives.jsx";
+import { CalendarHeatmap } from "../components/CalendarHeatmap.jsx";
+
+const mostCommon = (values) => {
+  const counts = {};
+  for (const v of values) if (v) counts[v] = (counts[v] || 0) + 1;
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  return top ? top[0] : "—";
+};
 
 export function InsightsScreen() {
   const [sessions] = useState(getSessions());
@@ -13,7 +24,7 @@ export function InsightsScreen() {
   if (sessions.length === 0) {
     return (
       <Screen>
-        <h2 style={{ fontFamily: fontSerif, fontSize: 27, fontWeight: 600, color: theme.bone, marginTop: 14, marginBottom: 18 }}>
+        <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 700, color: theme.bone, marginTop: 14, marginBottom: 18 }}>
           Insights
         </h2>
         <p style={{ fontFamily: fontSans, color: theme.faint, textAlign: "center", marginTop: 60 }}>
@@ -23,12 +34,41 @@ export function InsightsScreen() {
     );
   }
 
+  const finished = sessions.filter((s) => s.endTime);
+  const avgDurationMs = finished.length
+    ? finished.reduce((sum, s) => sum + (new Date(s.endTime) - new Date(s.startTime)), 0) / finished.length
+    : 0;
+  const spends = sessions.filter((s) => typeof s.cost === "number");
+  const totalSpend = spends.reduce((sum, s) => sum + s.cost, 0);
+  const distance = sessions.reduce((sum, s) => sum + (s.track?.length >= 2 ? totalDistance(s.track) : 0), 0);
+
   return (
     <Screen>
-      <h2 style={{ fontFamily: fontSerif, fontSize: 27, fontWeight: 600, color: theme.bone, marginTop: 14, marginBottom: 18 }}>
+      <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 700, color: theme.bone, marginTop: 14, marginBottom: 18 }}>
         Insights
       </h2>
       <div style={{ flex: 1, overflowY: "auto" }}>
+        <StatGrid>
+          <StatBox label="This Week" value={countSince(sessions, 7)} />
+          <StatBox label="This Month" value={countSince(sessions, 30)} />
+          <StatBox label="Avg Duration" value={avgDurationMs ? formatDuration(avgDurationMs) : "—"} />
+          <StatBox label="Total Logged" value={sessions.length} />
+          <StatBox label="Total Spend" value={spends.length ? `$${totalSpend.toFixed(0)}` : "—"} />
+          <StatBox
+            label="Avg Spend"
+            value={spends.length ? `$${(totalSpend / spends.length).toFixed(2)}` : "—"}
+            sub={spends.length ? `${spends.length} tracked` : undefined}
+          />
+          <StatBox label="Top Format" value={mostCommon(sessions.map((s) => s.format))} />
+          <StatBox label="Top Place" value={mostCommon(sessions.map((s) => s.place))} />
+          {distance > 0 && <StatBox label="Distance Moved" value={formatDistance(distance)} span={2} sub="across tracked sessions" />}
+        </StatGrid>
+        <Card>
+          <Eyebrow>Frequency</Eyebrow>
+          <div style={{ marginTop: 10 }}>
+            <CalendarHeatmap sessions={sessions} />
+          </div>
+        </Card>
         {nudges.map((nudge, i) => (
           <Card key={i} style={{ borderColor: nudge.tone === "rose" ? theme.roseDim : theme.sageDim }}>
             <p style={{ fontFamily: fontSans, fontSize: 13.5, color: nudge.tone === "rose" ? theme.rose : theme.sage, fontWeight: 600 }}>
@@ -45,7 +85,7 @@ export function InsightsScreen() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <Eyebrow tone={card.tone === "rose" ? "rose" : "sage"}>{card.title}</Eyebrow>
-                  <p style={{ fontFamily: fontSerif, fontSize: 22, color: theme.bone, fontWeight: 600 }}>{card.value}</p>
+                  <p style={{ fontFamily: fontDisplay, fontSize: 22, color: theme.bone, fontWeight: 700 }}>{card.value}</p>
                 </div>
                 <span style={{ color: theme.faint, fontSize: 18 }}>{expandedId === card.id ? "−" : "+"}</span>
               </div>

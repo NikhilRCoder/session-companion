@@ -9,8 +9,8 @@ const PHASE_LABELS = { pre: "Before session", post: "After session" };
 const inputStyle = {
   width: "100%",
   background: theme.bgCard,
-  border: `1.5px solid ${theme.line}`,
-  borderRadius: 14,
+  border: `1px solid ${theme.line}`,
+  borderRadius: 0,
   padding: "13px 16px",
   color: theme.bone,
   fontSize: 15,

@@ -1,4 +1,4 @@
-import { theme, fontSerif, fontSans } from "../theme.js";
+import { theme, fontDisplay, fontSans } from "../theme.js";
 import { Screen, BackLink, StepDots, Eyebrow, OptionButton, PrimaryButton, TextArea } from "./primitives.jsx";
 
 export function WizardStep({
@@ -48,7 +48,7 @@ export function WizardStep({
           {step.icon}
         </span>
         <Eyebrow tone={tone}>{eyebrow}</Eyebrow>
-        <h2 style={{ fontFamily: fontSerif, fontSize: 25, fontWeight: 600, color: theme.bone, lineHeight: 1.25 }}>
+        <h2 style={{ fontFamily: fontDisplay, fontSize: 25, fontWeight: 600, color: theme.bone, lineHeight: 1.25 }}>
           {step.q}
           {step.optional && (
             <>
@@ -76,7 +76,7 @@ export function WizardStep({
               width: "100%",
               background: theme.bgCard,
               border: `1.5px solid ${theme.line}`,
-              borderRadius: 16,
+              borderRadius: 0,
               padding: "16px 18px",
               color: theme.bone,
               fontSize: 16,

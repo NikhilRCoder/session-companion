@@ -1,21 +1,54 @@
-import { theme, fontSerif, fontSans } from "../theme.js";
+import { theme, fontDisplay, fontSans, fontMono } from "../theme.js";
 import { vibrate } from "../storage.js";
 
 export function Eyebrow({ children, tone = "sage" }) {
   return (
     <p
       style={{
-        fontFamily: fontSans,
-        fontSize: 11,
-        letterSpacing: 3,
+        fontFamily: fontMono,
+        fontSize: 10.5,
+        letterSpacing: 2.5,
         textTransform: "uppercase",
         color: tone === "sage" ? theme.sageDim : theme.roseDim,
-        fontWeight: 700,
+        fontWeight: 600,
         marginBottom: 6,
       }}
     >
       {children}
     </p>
+  );
+}
+
+// Hairline box grid: 1px gaps over a line-colored ground read as ruled dividers.
+export function StatGrid({ columns = 2, children, style = {} }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+        gap: 1,
+        background: theme.line,
+        border: `1px solid ${theme.line}`,
+        marginBottom: 12,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function StatBox({ label, value, sub, valueColor, span }) {
+  return (
+    <div style={{ background: theme.bgCard, padding: "13px 14px", gridColumn: span ? `span ${span}` : undefined }}>
+      <p style={{ fontFamily: fontDisplay, fontSize: 21, fontWeight: 800, color: valueColor || theme.bone, lineHeight: 1.15 }}>
+        {value}
+      </p>
+      <p style={{ fontFamily: fontMono, fontSize: 9.5, letterSpacing: 1.5, textTransform: "uppercase", color: theme.faint, marginTop: 4 }}>
+        {label}
+      </p>
+      {sub && <p style={{ fontFamily: fontSans, fontSize: 11.5, color: theme.fade, marginTop: 3 }}>{sub}</p>}
+    </div>
   );
 }
 
@@ -28,7 +61,7 @@ export function StepDots({ total, index }) {
           style={{
             width: i === index ? 18 : 6,
             height: 6,
-            borderRadius: 3,
+            borderRadius: 0,
             background: i === index ? theme.sage : i < index ? theme.sageDim : theme.line,
             transition: "all .25s",
           }}
@@ -50,8 +83,8 @@ export function OptionButton({ label, selected, onTap, tone = "sage" }) {
         width: "100%",
         textAlign: "left",
         padding: "17px 20px",
-        borderRadius: 16,
-        border: selected ? `1.5px solid ${accent}` : `1.5px solid ${theme.line}`,
+        borderRadius: 0,
+        border: selected ? `1px solid ${accent}` : `1px solid ${theme.line}`,
         background: selected ? `${accent}1a` : theme.bgCard,
         color: selected ? accent : theme.bone,
         fontFamily: fontSans,
@@ -72,9 +105,9 @@ export function OptionButton({ label, selected, onTap, tone = "sage" }) {
 }
 
 const BUTTON_TONES = {
-  sage: { bg: `linear-gradient(135deg, ${theme.sage}, ${theme.sageDim})`, fg: theme.sageDeep },
-  rose: { bg: `linear-gradient(135deg, ${theme.rose}, ${theme.roseDim})`, fg: theme.roseDeep },
-  gold: { bg: `linear-gradient(135deg, ${theme.gold}, #95702f)`, fg: "#241404" },
+  sage: { bg: theme.sage, fg: theme.sageDeep },
+  rose: { bg: theme.rose, fg: theme.roseDeep },
+  gold: { bg: theme.gold, fg: "#241404" },
   ghost: { bg: "transparent", fg: theme.fade },
   danger: { bg: "transparent", fg: theme.danger },
 };
@@ -88,10 +121,10 @@ export function PrimaryButton({ children, onTap, disabled, tone = "sage", style 
       style={{
         width: "100%",
         padding: "18px",
-        borderRadius: 18,
+        borderRadius: 0,
         border:
           tone === "ghost" || tone === "danger"
-            ? `1.5px solid ${tone === "danger" ? "#3a2420" : theme.line}`
+            ? `1px solid ${tone === "danger" ? "#3a2420" : theme.line}`
             : "none",
         background: disabled ? theme.line : t.bg,
         color: disabled ? theme.faint : t.fg,
@@ -114,7 +147,7 @@ export function Card({ children, style = {} }) {
       style={{
         background: theme.bgCard,
         border: `1px solid ${theme.line}`,
-        borderRadius: 16,
+        borderRadius: 0,
         padding: 16,
         marginBottom: 12,
         ...style,
@@ -129,7 +162,7 @@ export function StatRow({ label, value, valueColor }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", padding: "3px 0" }}>
       <span style={{ fontFamily: fontSans, color: theme.faint, fontSize: 13.5 }}>{label}</span>
-      <span style={{ fontFamily: fontSans, color: valueColor || theme.bone, fontSize: 13.5, fontWeight: 600 }}>
+      <span style={{ fontFamily: fontMono, color: valueColor || theme.bone, fontSize: 13, fontWeight: 500 }}>
         {value}
       </span>
     </div>
@@ -143,8 +176,8 @@ export function TextArea(props) {
       style={{
         width: "100%",
         background: theme.bgCard,
-        border: `1.5px solid ${theme.line}`,
-        borderRadius: 16,
+        border: `1px solid ${theme.line}`,
+        borderRadius: 0,
         padding: 16,
         color: theme.bone,
         fontSize: 16,
@@ -186,13 +219,13 @@ export function ProgressBar({ label, pct, tone = "sage", sub }) {
         <span style={{ fontFamily: fontSans, fontSize: 13, color: theme.bone, fontWeight: 600 }}>{label}</span>
         <span style={{ fontFamily: fontSans, fontSize: 12, color: theme.faint }}>{sub}</span>
       </div>
-      <div style={{ height: 7, background: theme.line, borderRadius: 4, overflow: "hidden" }}>
+      <div style={{ height: 7, background: theme.line, borderRadius: 0, overflow: "hidden" }}>
         <div
           style={{
             height: "100%",
             width: `${Math.max(4, pct)}%`,
             background: accent,
-            borderRadius: 4,
+            borderRadius: 0,
             transition: "width .4s",
           }}
         />
@@ -208,12 +241,12 @@ export function ChoiceChip({ label, selected, onTap, tone = "rose" }) {
       onClick={onTap}
       style={{
         padding: "9px 14px",
-        borderRadius: 999,
+        borderRadius: 0,
         fontFamily: fontSans,
         fontSize: 13,
         fontWeight: 600,
         cursor: "pointer",
-        border: selected ? `1.5px solid ${accent}` : `1.5px solid ${theme.line}`,
+        border: selected ? `1px solid ${accent}` : `1px solid ${theme.line}`,
         background: selected ? `${accent}1a` : "transparent",
         color: selected ? accent : theme.fade,
       }}
@@ -232,7 +265,7 @@ export function Pill({ children }) {
         color: theme.fade,
         background: theme.bgCard,
         border: `1px solid ${theme.line}`,
-        borderRadius: 999,
+        borderRadius: 0,
         padding: "6px 13px",
       }}
     >
