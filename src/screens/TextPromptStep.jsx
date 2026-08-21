@@ -1,4 +1,4 @@
-import { theme, fontSerif, fontSans } from "../theme.js";
+import { theme, fontDisplay, fontSans } from "../theme.js";
 import { Screen, BackLink, Eyebrow, TextArea, PrimaryButton } from "../components/primitives.jsx";
 
 export function TextPromptStep({ value, onChange, onBack, onNext, icon, eyebrow, title, placeholder, buttonLabel, tone = "sage" }) {
@@ -17,7 +17,7 @@ export function TextPromptStep({ value, onChange, onBack, onNext, icon, eyebrow,
           {icon}
         </span>
         <Eyebrow tone={tone}>{eyebrow}</Eyebrow>
-        <h2 style={{ fontFamily: fontSerif, fontSize: 25, fontWeight: 600, color: theme.bone }}>
+        <h2 style={{ fontFamily: fontDisplay, fontSize: 25, fontWeight: 600, color: theme.bone }}>
           {title} <span style={{ color: theme.faint, fontSize: 15, fontFamily: fontSans }}>(optional)</span>
         </h2>
       </div>

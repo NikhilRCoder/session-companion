@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { theme, fontSerif, fontSans } from "../theme.js";
+import { theme, fontDisplay, fontSans } from "../theme.js";
 import { getPeople, getFields } from "../storage.js";
 import { formatDuration, formatDate } from "../format.js";
 import { formatCoords, totalDistance, formatDistance } from "../geo.js";
@@ -28,12 +28,12 @@ function EditChip({ label, selected, onTap }) {
       onClick={onTap}
       style={{
         padding: "9px 14px",
-        borderRadius: 999,
+        borderRadius: 0,
         fontFamily: fontSans,
         fontSize: 13,
         fontWeight: 600,
         cursor: "pointer",
-        border: selected ? `1.5px solid ${theme.rose}` : `1.5px solid ${theme.line}`,
+        border: selected ? `1px solid ${theme.rose}` : `1px solid ${theme.line}`,
         background: selected ? `${theme.rose}1a` : "transparent",
         color: selected ? theme.rose : theme.fade,
       }}
@@ -67,7 +67,7 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
       <Screen>
         <div style={{ paddingTop: 18, marginBottom: 24 }}>
           <Eyebrow>Editing</Eyebrow>
-          <h2 style={{ fontFamily: fontSerif, fontSize: 27, fontWeight: 600, color: theme.bone }}>Edit Session</h2>
+          <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 600, color: theme.bone }}>Edit Session</h2>
         </div>
         <div style={{ flex: 1, overflowY: "auto" }}>
           <EditField label="Format">
@@ -92,8 +92,8 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
               style={{
                 width: "100%",
                 background: theme.bgCard,
-                border: `1.5px solid ${theme.line}`,
-                borderRadius: 14,
+                border: `1px solid ${theme.line}`,
+                borderRadius: 0,
                 padding: "13px 16px",
                 color: theme.bone,
                 fontSize: 15,
@@ -116,8 +116,8 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
               style={{
                 width: "100%",
                 background: theme.bgCard,
-                border: `1.5px solid ${theme.line}`,
-                borderRadius: 14,
+                border: `1px solid ${theme.line}`,
+                borderRadius: 0,
                 padding: "13px 16px",
                 color: theme.bone,
                 fontSize: 15,
@@ -177,8 +177,8 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
                     style={{
                       width: "100%",
                       background: theme.bgCard,
-                      border: `1.5px solid ${theme.line}`,
-                      borderRadius: 14,
+                      border: `1px solid ${theme.line}`,
+                      borderRadius: 0,
                       padding: "13px 16px",
                       color: theme.bone,
                       fontSize: 15,
@@ -224,7 +224,7 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
       <div style={{ paddingTop: 18, marginBottom: 24, textAlign: "center" }}>
         <span style={{ fontSize: 32, display: "block", marginBottom: 10 }}>🌿</span>
         <Eyebrow>Logged</Eyebrow>
-        <h2 style={{ fontFamily: fontSerif, fontSize: 27, fontWeight: 600, color: theme.bone }}>That's a wrap.</h2>
+        <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 600, color: theme.bone }}>That's a wrap.</h2>
       </div>
       <div style={{ flex: 1, overflowY: "auto" }}>
         <Card>

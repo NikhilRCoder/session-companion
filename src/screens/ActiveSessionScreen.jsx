@@ -57,7 +57,7 @@ export function ActiveSessionScreen({ live, onCheckIn, onEndDirect, onUpdateNote
           width: "100%",
           background: theme.bgCard,
           border: `1px solid ${theme.line}`,
-          borderRadius: 16,
+          borderRadius: 0,
           padding: "14px 16px",
           color: theme.fade,
           fontFamily: fontSans,

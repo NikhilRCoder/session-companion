@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { theme, fontSerif, fontSans } from "../theme.js";
+import { theme, fontDisplay, fontSans } from "../theme.js";
 import { getPeople, savePeople, getSessions, makeId } from "../storage.js";
 import { Screen, BackLink, Eyebrow, Card, ProgressBar } from "../components/primitives.jsx";
 
@@ -39,7 +39,7 @@ export function PeopleScreen() {
     return (
       <Screen>
         <BackLink onBack={() => setSelected(null)} label="← People" />
-        <h2 style={{ fontFamily: fontSerif, fontSize: 27, fontWeight: 600, color: theme.bone, marginBottom: 18 }}>
+        <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 600, color: theme.bone, marginBottom: 18 }}>
           {selected.name}
         </h2>
         <div style={{ flex: 1, overflowY: "auto" }}>
@@ -53,7 +53,7 @@ export function PeopleScreen() {
           </Card>
           <Card>
             <Eyebrow>Sessions Together</Eyebrow>
-            <p style={{ fontFamily: fontSerif, fontSize: 30, color: theme.bone, marginTop: 6 }}>{withPerson.length}</p>
+            <p style={{ fontFamily: fontDisplay, fontSize: 30, color: theme.bone, marginTop: 6 }}>{withPerson.length}</p>
           </Card>
           {withPerson.length === 0 && (
             <p style={{ fontFamily: fontSans, color: theme.faint, fontSize: 13.5, textAlign: "center", marginTop: 20 }}>
@@ -67,7 +67,7 @@ export function PeopleScreen() {
 
   return (
     <Screen>
-      <h2 style={{ fontFamily: fontSerif, fontSize: 27, fontWeight: 600, color: theme.bone, marginTop: 14, marginBottom: 18 }}>
+      <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 600, color: theme.bone, marginTop: 14, marginBottom: 18 }}>
         People
       </h2>
       <div style={{ flex: 1, overflowY: "auto" }}>
@@ -92,7 +92,7 @@ export function PeopleScreen() {
                     flex: 1,
                     background: theme.bgRaised,
                     border: `1px solid ${theme.line}`,
-                    borderRadius: 10,
+                    borderRadius: 0,
                     padding: "8px 12px",
                     color: theme.bone,
                     fontFamily: fontSans,
@@ -137,8 +137,8 @@ export function PeopleScreen() {
           style={{
             flex: 1,
             background: theme.bgCard,
-            border: `1.5px solid ${theme.line}`,
-            borderRadius: 14,
+            border: `1px solid ${theme.line}`,
+            borderRadius: 0,
             padding: "13px 16px",
             color: theme.bone,
             fontSize: 15,
@@ -152,7 +152,7 @@ export function PeopleScreen() {
             background: theme.sage,
             color: theme.sageDeep,
             border: "none",
-            borderRadius: 14,
+            borderRadius: 0,
             padding: "0 18px",
             fontFamily: fontSans,
             fontWeight: 700,

@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { theme, fontSerif, fontSans } from "../theme.js";
+import { theme, fontDisplay, fontSans } from "../theme.js";
 import { getPlaces, savePlaces } from "../storage.js";
 import { exportBackup, importBackup } from "../backup.js";
 import { Screen, BackLink, Eyebrow, Card, PrimaryButton } from "../components/primitives.jsx";
@@ -19,7 +19,7 @@ export function SettingsScreen({ onBack }) {
   return (
     <Screen>
       <BackLink onBack={onBack} label="← Home" />
-      <h2 style={{ fontFamily: fontSerif, fontSize: 27, fontWeight: 600, color: theme.bone, marginBottom: 18 }}>
+      <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 600, color: theme.bone, marginBottom: 18 }}>
         Settings
       </h2>
       <div style={{ flex: 1, overflowY: "auto" }}>
