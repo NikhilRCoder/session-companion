@@ -36,10 +36,18 @@ export function HomeScreen({ onStart, onSettings }) {
               label="Days Since Last"
               value={sinceLast === 0 ? "Today" : sinceLast}
               valueColor={sinceLast >= 3 ? theme.sage : undefined}
+              accent={theme.sage}
+              icon="◐"
             />
-            <StatBox label="Longest Break" value={`${longest}d`} />
-            <StatBox label="This Week" value={countSince(sessions, 7)} />
-            <StatBox label="Avg / Week" value={avgPerWeek(sessions).toFixed(1)} sub="last 4 weeks" />
+            <StatBox label="Longest Break" value={`${longest}d`} accent={theme.rose} icon="◑" />
+            <StatBox label="This Week" value={countSince(sessions, 7)} accent={theme.gold} icon="◒" />
+            <StatBox
+              label="Avg / Week"
+              value={avgPerWeek(sessions).toFixed(1)}
+              sub="last 4 weeks"
+              accent={theme.fade}
+              icon="◓"
+            />
           </StatGrid>
         )}
         {lastSession ? (

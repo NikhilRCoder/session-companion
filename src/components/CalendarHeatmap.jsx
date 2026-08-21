@@ -19,6 +19,7 @@ export function CalendarHeatmap({ sessions }) {
           gap: 1,
           background: theme.line,
           border: `1px solid ${theme.line}`,
+          boxShadow: theme.shadowCard,
         }}
       >
         {weeks.map((week, wi) => (

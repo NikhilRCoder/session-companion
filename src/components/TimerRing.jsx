@@ -24,7 +24,10 @@ export function TimerRing({ elapsedMs }) {
           strokeWidth="2"
           pathLength="100"
           strokeDasharray={`${dash} 100`}
-          style={{ transition: reducedMotion ? "none" : "stroke-dasharray 1s linear" }}
+          style={{
+            transition: reducedMotion ? "none" : "stroke-dasharray 1s linear",
+            filter: `drop-shadow(0 0 5px ${theme.gold}99)`,
+          }}
         />
       </svg>
       <div

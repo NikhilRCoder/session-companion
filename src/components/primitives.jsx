@@ -29,6 +29,7 @@ export function StatGrid({ columns = 2, children, style = {} }) {
         gap: 1,
         background: theme.line,
         border: `1px solid ${theme.line}`,
+        boxShadow: theme.shadowCard,
         marginBottom: 12,
         ...style,
       }}
@@ -38,12 +39,16 @@ export function StatGrid({ columns = 2, children, style = {} }) {
   );
 }
 
-export function StatBox({ label, value, sub, valueColor, span }) {
+export function StatBox({ label, value, sub, valueColor, span, accent, icon }) {
   return (
-    <div style={{ background: theme.bgCard, padding: "13px 14px", gridColumn: span ? `span ${span}` : undefined }}>
-      <p style={{ fontFamily: fontDisplay, fontSize: 21, fontWeight: 800, color: valueColor || theme.bone, lineHeight: 1.15 }}>
-        {value}
-      </p>
+    <div style={{ background: theme.bgCard, padding: "13px 14px 14px", gridColumn: span ? `span ${span}` : undefined }}>
+      <div style={{ height: 2, width: 20, background: accent || "transparent", marginBottom: 10 }} />
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+        <p style={{ fontFamily: fontDisplay, fontSize: 21, fontWeight: 800, color: valueColor || theme.bone, lineHeight: 1.15 }}>
+          {value}
+        </p>
+        {icon && <span style={{ fontSize: 13, color: accent || theme.faint, opacity: 0.85 }}>{icon}</span>}
+      </div>
       <p style={{ fontFamily: fontMono, fontSize: 9.5, letterSpacing: 1.5, textTransform: "uppercase", color: theme.faint, marginTop: 4 }}>
         {label}
       </p>
@@ -112,8 +117,11 @@ const BUTTON_TONES = {
   danger: { bg: "transparent", fg: theme.danger },
 };
 
+const FILLED_TONES = new Set(["sage", "rose", "gold"]);
+
 export function PrimaryButton({ children, onTap, disabled, tone = "sage", style = {} }) {
   const t = BUTTON_TONES[tone];
+  const glow = !disabled && FILLED_TONES.has(tone) ? `0 4px 16px ${t.bg}4d, 0 1px 2px rgba(0,0,0,.4)` : "none";
   return (
     <button
       onClick={() => !disabled && (vibrate(12), onTap())}
@@ -133,6 +141,8 @@ export function PrimaryButton({ children, onTap, disabled, tone = "sage", style 
         fontWeight: 700,
         letterSpacing: 0.2,
         cursor: disabled ? "not-allowed" : "pointer",
+        boxShadow: glow,
+        transition: "box-shadow .15s, transform .1s",
         ...style,
       }}
     >
@@ -148,6 +158,7 @@ export function Card({ children, style = {} }) {
         background: theme.bgCard,
         border: `1px solid ${theme.line}`,
         borderRadius: 0,
+        boxShadow: theme.shadowCard,
         padding: 16,
         marginBottom: 12,
         ...style,
@@ -249,6 +260,8 @@ export function ChoiceChip({ label, selected, onTap, tone = "rose" }) {
         border: selected ? `1px solid ${accent}` : `1px solid ${theme.line}`,
         background: selected ? `${accent}1a` : "transparent",
         color: selected ? accent : theme.fade,
+        boxShadow: selected ? `0 2px 10px ${accent}33` : "none",
+        transition: "box-shadow .15s",
       }}
     >
       {label}
@@ -266,6 +279,7 @@ export function Pill({ children }) {
         background: theme.bgCard,
         border: `1px solid ${theme.line}`,
         borderRadius: 0,
+        boxShadow: theme.shadowCard,
         padding: "6px 13px",
       }}
     >

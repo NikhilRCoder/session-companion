@@ -17,6 +17,7 @@ export function BottomNav({ active, onChange }) {
         gap: 1,
         background: theme.line,
         borderTop: `1px solid ${theme.line}`,
+        boxShadow: "0 -8px 24px rgba(0,0,0,.35)",
         paddingBottom: 0,
       }}
     >
