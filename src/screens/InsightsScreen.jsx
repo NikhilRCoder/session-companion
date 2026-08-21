@@ -49,19 +49,30 @@ export function InsightsScreen() {
       </h2>
       <div style={{ flex: 1, overflowY: "auto" }}>
         <StatGrid>
-          <StatBox label="This Week" value={countSince(sessions, 7)} />
-          <StatBox label="This Month" value={countSince(sessions, 30)} />
-          <StatBox label="Avg Duration" value={avgDurationMs ? formatDuration(avgDurationMs) : "—"} />
-          <StatBox label="Total Logged" value={sessions.length} />
-          <StatBox label="Total Spend" value={spends.length ? `$${totalSpend.toFixed(0)}` : "—"} />
+          <StatBox label="This Week" value={countSince(sessions, 7)} accent={theme.sage} icon="◒" />
+          <StatBox label="This Month" value={countSince(sessions, 30)} accent={theme.sage} icon="◓" />
+          <StatBox label="Avg Duration" value={avgDurationMs ? formatDuration(avgDurationMs) : "—"} accent={theme.gold} icon="◷" />
+          <StatBox label="Total Logged" value={sessions.length} accent={theme.fade} icon="▣" />
+          <StatBox label="Total Spend" value={spends.length ? `$${totalSpend.toFixed(0)}` : "—"} accent={theme.gold} icon="◈" />
           <StatBox
             label="Avg Spend"
             value={spends.length ? `$${(totalSpend / spends.length).toFixed(2)}` : "—"}
             sub={spends.length ? `${spends.length} tracked` : undefined}
+            accent={theme.gold}
+            icon="◈"
           />
-          <StatBox label="Top Format" value={mostCommon(sessions.map((s) => s.format))} />
-          <StatBox label="Top Place" value={mostCommon(sessions.map((s) => s.place))} />
-          {distance > 0 && <StatBox label="Distance Moved" value={formatDistance(distance)} span={2} sub="across tracked sessions" />}
+          <StatBox label="Top Format" value={mostCommon(sessions.map((s) => s.format))} accent={theme.sage} icon="◆" />
+          <StatBox label="Top Place" value={mostCommon(sessions.map((s) => s.place))} accent={theme.rose} icon="◍" />
+          {distance > 0 && (
+            <StatBox
+              label="Distance Moved"
+              value={formatDistance(distance)}
+              span={2}
+              sub="across tracked sessions"
+              accent={theme.sage}
+              icon="→"
+            />
+          )}
         </StatGrid>
         <Card>
           <Eyebrow>Frequency</Eyebrow>

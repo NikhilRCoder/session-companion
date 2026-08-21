@@ -39,7 +39,8 @@ export function MoodTrendChart({ values }) {
           const height = (Math.abs(value) / maxAbs) * HALF_PLOT;
           const direction = value > 0 ? "up" : "down";
           const path = roundedBar(x, barWidth, height, direction);
-          return <path key={i} d={path} fill={value > 0 ? theme.sage : theme.rose} />;
+          const fill = value > 0 ? theme.sage : theme.rose;
+          return <path key={i} d={path} fill={fill} style={{ filter: `drop-shadow(0 0 3px ${fill}66)` }} />;
         })}
         {lastValue !== null && (
           <text

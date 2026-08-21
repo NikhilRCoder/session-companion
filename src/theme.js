@@ -14,6 +14,8 @@ export const theme = {
   fade: "#988b97",
   faint: "#5c4f5c",
   danger: "#c97361",
+  shadowCard: "0 1px 2px rgba(0,0,0,.35), 0 8px 20px rgba(0,0,0,.22)",
+  shadowRaised: "0 2px 6px rgba(0,0,0,.4), 0 16px 36px rgba(0,0,0,.32)",
 };
 
 export const fontDisplay = "'Archivo', sans-serif";
