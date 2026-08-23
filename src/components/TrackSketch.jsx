@@ -41,19 +41,9 @@ export function TrackSketch({ track }) {
       aria-label="Sketch of movement during the session"
       style={{ display: "block", marginBottom: 8 }}
     >
-      <polyline
-        points={path}
-        fill="none"
-        stroke={theme.sage}
-        strokeWidth="2"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        style={{ filter: `drop-shadow(0 0 4px ${theme.sage}66)` }}
-      />
-      <circle cx={start.x} cy={start.y} r="6" fill={theme.bgCard} />
-      <circle cx={start.x} cy={start.y} r="4" fill={theme.faint} />
-      <circle cx={end.x} cy={end.y} r="6" fill={theme.bgCard} />
-      <circle cx={end.x} cy={end.y} r="4" fill={theme.gold} style={{ filter: `drop-shadow(0 0 5px ${theme.gold}99)` }} />
+      <polyline points={path} fill="none" stroke={theme.ink} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={start.x} cy={start.y} r="5" fill={theme.surface} stroke={theme.ink} strokeWidth="2" />
+      <circle cx={end.x} cy={end.y} r="5" fill={theme.accent} />
     </svg>
   );
 }

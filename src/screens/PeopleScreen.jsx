@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { theme, fontDisplay, fontSans } from "../theme.js";
 import { getPeople, savePeople, getSessions, makeId } from "../storage.js";
-import { Screen, BackLink, Eyebrow, Card, ProgressBar } from "../components/primitives.jsx";
+import { QUALITY_OPTIONS } from "../wizardSteps.js";
+import { Screen, Slab, SlabHead, Body, SectionRule, Card, ProgressBar, Input } from "../components/primitives.jsx";
 
 export function PeopleScreen() {
   const [people, setPeople] = useState(getPeople());
@@ -30,97 +31,74 @@ export function PeopleScreen() {
 
   if (selected) {
     const withPerson = sessions.filter((s) => (s.peopleIds || []).includes(selected.id));
-    const tally = { "Felt good": 0, Neutral: 0, "Felt off": 0 };
+    const tally = Object.fromEntries(QUALITY_OPTIONS.map((q) => [q, 0]));
     withPerson.forEach((s) => {
       const q = s.interactionQuality?.[selected.id];
       if (q) tally[q]++;
     });
     const total = withPerson.length || 1;
     return (
-      <Screen>
-        <BackLink onBack={() => setSelected(null)} label="← People" />
-        <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 600, color: theme.bone, marginBottom: 18 }}>
-          {selected.name}
-        </h2>
-        <div style={{ flex: 1, overflowY: "auto" }}>
+      <Screen noBottomPad>
+        <Slab>
+          <SlabHead kicker="People" onBack={() => setSelected(null)} />
+          <h2 style={{ fontFamily: fontDisplay, fontSize: 32, fontWeight: 700, textTransform: "uppercase", marginTop: 16, position: "relative" }}>
+            {selected.name}
+          </h2>
+        </Slab>
+        <Body>
           <Card>
-            <Eyebrow tone="rose">Interaction Quality</Eyebrow>
+            <SectionRule ink>Interaction quality</SectionRule>
             <div style={{ marginTop: 10 }}>
               {Object.entries(tally).map(([label, count]) => (
-                <ProgressBar key={label} label={label} pct={(count / total) * 100} sub={`${count}`} tone="rose" />
+                <ProgressBar key={label} label={label} pct={(count / total) * 100} sub={`${count}`} />
               ))}
             </div>
           </Card>
           <Card>
-            <Eyebrow>Sessions Together</Eyebrow>
-            <p style={{ fontFamily: fontDisplay, fontSize: 30, color: theme.bone, marginTop: 6 }}>{withPerson.length}</p>
+            <SectionRule ink>Sessions together</SectionRule>
+            <p style={{ fontFamily: fontDisplay, fontSize: 30, fontWeight: 700, color: theme.ink, marginTop: 6 }}>{withPerson.length}</p>
           </Card>
           {withPerson.length === 0 && (
-            <p style={{ fontFamily: fontSans, color: theme.faint, fontSize: 13.5, textAlign: "center", marginTop: 20 }}>
+            <p style={{ fontFamily: fontSans, color: theme.n600, fontSize: 13.5, textAlign: "center", marginTop: 20 }}>
               No sessions logged with {selected.name} yet.
             </p>
           )}
-        </div>
+        </Body>
       </Screen>
     );
   }
 
   return (
     <Screen>
-      <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 600, color: theme.bone, marginTop: 14, marginBottom: 18 }}>
+      <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 700, textTransform: "uppercase", color: theme.ink, marginTop: 14, marginBottom: 18 }}>
         People
       </h2>
       <div style={{ flex: 1, overflowY: "auto" }}>
         {people.length === 0 && (
-          <p style={{ fontFamily: fontSans, color: theme.faint, fontSize: 13.5, textAlign: "center", marginBottom: 16 }}>
-            No one saved yet.
-          </p>
+          <p style={{ fontFamily: fontSans, color: theme.n600, fontSize: 13.5, textAlign: "center", marginBottom: 16 }}>No one saved yet.</p>
         )}
         {people.map((person) => (
           <Card key={person.id} style={{ display: "flex", flexDirection: "column" }}>
             {editingId === person.id ? (
-              <div style={{ display: "flex", gap: 8 }}>
-                <input
-                  defaultValue={person.name}
-                  autoFocus
-                  onBlur={(e) => {
-                    renamePerson(person.id, e.target.value.trim() || person.name);
-                    setEditingId(null);
-                  }}
-                  onKeyDown={(e) => e.key === "Enter" && e.target.blur()}
-                  style={{
-                    flex: 1,
-                    background: theme.bgRaised,
-                    border: `1px solid ${theme.line}`,
-                    borderRadius: 0,
-                    padding: "8px 12px",
-                    color: theme.bone,
-                    fontFamily: fontSans,
-                    fontSize: 14,
-                  }}
-                />
-              </div>
+              <Input
+                defaultValue={person.name}
+                autoFocus
+                onBlur={(e) => {
+                  renamePerson(person.id, e.target.value.trim() || person.name);
+                  setEditingId(null);
+                }}
+                onKeyDown={(e) => e.key === "Enter" && e.target.blur()}
+              />
             ) : (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <button
-                  onClick={() => setSelected(person)}
-                  style={{ background: "none", border: "none", textAlign: "left", flex: 1, cursor: "pointer" }}
-                >
-                  <span style={{ fontFamily: fontSans, color: theme.bone, fontSize: 15, fontWeight: 700 }}>
-                    {person.name}
-                  </span>
+                <button onClick={() => setSelected(person)} style={{ background: "none", border: "none", textAlign: "left", flex: 1, cursor: "pointer" }}>
+                  <span style={{ fontFamily: fontDisplay, color: theme.ink, fontSize: 15, fontWeight: 700, textTransform: "uppercase" }}>{person.name}</span>
                 </button>
                 <div style={{ display: "flex", gap: 14 }}>
-                  <button
-                    onClick={() => setEditingId(person.id)}
-                    style={{ background: "none", border: "none", color: theme.faint, cursor: "pointer", fontSize: 13 }}
-                  >
+                  <button onClick={() => setEditingId(person.id)} style={{ background: "none", border: "none", color: theme.n600, cursor: "pointer", fontSize: 13, fontFamily: fontSans }}>
                     Edit
                   </button>
-                  <button
-                    onClick={() => removePerson(person.id)}
-                    style={{ background: "none", border: "none", color: theme.danger, cursor: "pointer", fontSize: 13 }}
-                  >
+                  <button onClick={() => removePerson(person.id)} style={{ background: "none", border: "none", color: theme.accent700, cursor: "pointer", fontSize: 13, fontFamily: fontSans }}>
                     Remove
                   </button>
                 </div>
@@ -130,35 +108,10 @@ export function PeopleScreen() {
         ))}
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Add a name..."
-          style={{
-            flex: 1,
-            background: theme.bgCard,
-            border: `1px solid ${theme.line}`,
-            borderRadius: 0,
-            padding: "13px 16px",
-            color: theme.bone,
-            fontSize: 15,
-            fontFamily: fontSans,
-            boxSizing: "border-box",
-          }}
-        />
+        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Add a name..." style={{ flex: 1 }} />
         <button
           onClick={addPerson}
-          style={{
-            background: theme.sage,
-            color: theme.sageDeep,
-            border: "none",
-            borderRadius: 0,
-            padding: "0 18px",
-            fontFamily: fontSans,
-            fontWeight: 700,
-            fontSize: 14,
-            cursor: "pointer",
-          }}
+          style={{ background: theme.ink, color: theme.surface, border: "none", padding: "0 18px", fontFamily: fontDisplay, fontWeight: 700, fontSize: 13, textTransform: "uppercase", cursor: "pointer" }}
         >
           Add
         </button>

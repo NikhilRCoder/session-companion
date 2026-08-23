@@ -3,8 +3,23 @@ import { formatDuration, daysSince, isSameDay, isSameMonth } from "./format.js";
 import { ProgressBar } from "./components/primitives.jsx";
 import { MoodTrendChart } from "./components/MoodTrendChart.jsx";
 
-const POSITIVE_MOODS = ["Zen", "Vibing", "Connected", "Energized"];
-const NEGATIVE_MOODS = ["Overwhelmed"];
+const POSITIVE_EFFECTS = ["Relaxed", "Euphoric", "Focused", "Creative", "Giggly"];
+const NEGATIVE_SIDE_EFFECTS = ["Anxiety", "Racing heart", "Paranoia", "Dizziness", "Nausea"];
+const OLD_POSITIVE_MOODS = ["Zen", "Vibing", "Connected", "Energized"];
+const OLD_NEGATIVE_MOODS = ["Overwhelmed"];
+
+function netMood(session) {
+  if (session.effects || session.sideEffects) {
+    const pos = (session.effects || []).filter((m) => POSITIVE_EFFECTS.includes(m)).length;
+    const neg = (session.sideEffects || []).filter((m) => NEGATIVE_SIDE_EFFECTS.includes(m)).length;
+    return pos - neg;
+  }
+  if (session.moodsPost) {
+    return session.moodsPost.filter((m) => OLD_POSITIVE_MOODS.includes(m)).length - session.moodsPost.filter((m) => OLD_NEGATIVE_MOODS.includes(m)).length;
+  }
+  return 0;
+}
+const hasMoodSignal = (session) => Boolean(session.effects?.length || session.sideEffects?.length || session.moodsPost?.length);
 
 const tally = (values) => values.reduce((acc, v) => ((acc[v] = (acc[v] || 0) + 1), acc), {});
 const topEntry = (counts) => Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
@@ -12,14 +27,11 @@ const topEntry = (counts) => Object.entries(counts).sort((a, b) => b[1] - a[1])[
 function computeMoodTrend(completed, weeks = 8) {
   const buckets = Array.from({ length: weeks }, () => ({ sum: 0, n: 0 }));
   completed.forEach((s) => {
-    if (!s.moodsPost?.length) return;
+    if (!hasMoodSignal(s)) return;
     const weeksAgo = Math.floor(daysSince(s.startTime) / 7);
     if (weeksAgo < 0 || weeksAgo >= weeks) return;
-    const net =
-      s.moodsPost.filter((m) => POSITIVE_MOODS.includes(m)).length -
-      s.moodsPost.filter((m) => NEGATIVE_MOODS.includes(m)).length;
     const bucket = buckets[weeks - 1 - weeksAgo];
-    bucket.sum += net;
+    bucket.sum += netMood(s);
     bucket.n++;
   });
   return buckets.map((b) => (b.n ? b.sum / b.n : null));
@@ -29,23 +41,21 @@ export function computeInsights(sessions, people) {
   if (sessions.length === 0) return { cards: [], nudges: [] };
 
   const completed = sessions.filter((s) => s.endTime);
-  const formatCounts = tally(completed.map((s) => s.format).filter(Boolean));
+  const methodCounts = tally(completed.map((s) => s.method || s.format).filter(Boolean));
   const avgDurationMs = completed.length
     ? completed.reduce((sum, s) => sum + (new Date(s.endTime) - new Date(s.startTime)), 0) / completed.length
     : 0;
 
-  const moodBySetting = {};
+  const moodByEnvironment = {};
   completed.forEach((s) => {
-    if (!s.setting) return;
-    const netMood =
-      (s.moodsPost || []).filter((m) => POSITIVE_MOODS.includes(m)).length -
-      (s.moodsPost || []).filter((m) => NEGATIVE_MOODS.includes(m)).length;
-    moodBySetting[s.setting] = moodBySetting[s.setting] || { sum: 0, n: 0 };
-    moodBySetting[s.setting].sum += netMood;
-    moodBySetting[s.setting].n++;
+    const env = s.environment || s.setting;
+    if (!env || !hasMoodSignal(s)) return;
+    moodByEnvironment[env] = moodByEnvironment[env] || { sum: 0, n: 0 };
+    moodByEnvironment[env].sum += netMood(s);
+    moodByEnvironment[env].n++;
   });
-  const bestSetting = Object.entries(moodBySetting)
-    .map(([setting, stat]) => [setting, stat.sum / stat.n])
+  const bestEnvironment = Object.entries(moodByEnvironment)
+    .map(([env, stat]) => [env, stat.sum / stat.n])
     .sort((a, b) => b[1] - a[1])[0];
 
   const peopleStats = {};
@@ -68,29 +78,26 @@ export function computeInsights(sessions, people) {
       id: "freq",
       title: "This Week",
       value: `${thisWeekCount} session${thisWeekCount === 1 ? "" : "s"}`,
-      tone: "sage",
+      tone: "accent",
       detail: <ProgressBar label="Last 7 days" pct={Math.min(100, thisWeekCount * 14)} sub={`${thisWeekCount}/7`} />,
     },
     {
-      id: "format",
-      title: "Most Common Format",
-      value: topEntry(formatCounts)?.[0] || "—",
-      tone: "sage",
-      detail: Object.entries(formatCounts)
+      id: "method",
+      title: "Most Common Method",
+      value: topEntry(methodCounts)?.[0] || "—",
+      tone: "accent",
+      detail: Object.entries(methodCounts)
         .sort((a, b) => b[1] - a[1])
-        .map(([format, count]) => (
-          <ProgressBar key={format} label={format} pct={(count / completed.length) * 100} sub={`${count}`} />
-        )),
+        .map(([method, count]) => <ProgressBar key={method} label={method} pct={(count / completed.length) * 100} sub={`${count}`} />),
     },
     {
-      id: "setting",
-      title: "Best Mood Setting",
-      value: bestSetting?.[0] || "—",
-      tone: "rose",
+      id: "environment",
+      title: "Best Mood Environment",
+      value: bestEnvironment?.[0] || "—",
+      tone: "accent",
       detail: (
-        <p style={{ fontFamily: fontSans, color: theme.fade, fontSize: 13.5, lineHeight: 1.6 }}>
-          Sessions in <strong style={{ color: theme.bone }}>{bestSetting?.[0] || "—"}</strong> trend toward your most
-          positive post-session moods.
+        <p style={{ fontFamily: fontSans, color: theme.n600, fontSize: 13.5, lineHeight: 1.6 }}>
+          Sessions <strong style={{ color: theme.ink }}>{bestEnvironment?.[0] || "—"}</strong> trend toward your most positive post-session effects.
         </p>
       ),
     },
@@ -98,9 +105,9 @@ export function computeInsights(sessions, people) {
       id: "duration",
       title: "Average Duration",
       value: formatDuration(avgDurationMs),
-      tone: "gold",
+      tone: "accent",
       detail: (
-        <p style={{ fontFamily: fontSans, color: theme.fade, fontSize: 13.5, lineHeight: 1.6 }}>
+        <p style={{ fontFamily: fontSans, color: theme.n600, fontSize: 13.5, lineHeight: 1.6 }}>
           Across {completed.length} completed session{completed.length === 1 ? "" : "s"}.
         </p>
       ),
@@ -112,12 +119,10 @@ export function computeInsights(sessions, people) {
       id: "people",
       title: "People Patterns",
       value: `${Object.keys(peopleStats).length} tracked`,
-      tone: "rose",
+      tone: "accent",
       detail: Object.entries(peopleStats).map(([personId, stat]) => {
         const name = people.find((p) => p.id === personId)?.name || "Unknown";
-        return (
-          <ProgressBar key={personId} label={name} pct={(stat.good / stat.total) * 100} sub={`${stat.good}/${stat.total} good`} tone="rose" />
-        );
+        return <ProgressBar key={personId} label={name} pct={(stat.good / stat.total) * 100} sub={`${stat.good}/${stat.total} good`} />;
       }),
     });
   }
@@ -126,18 +131,8 @@ export function computeInsights(sessions, people) {
   const moodTrendSignal = moodTrend.filter((v) => v !== null);
   if (moodTrendSignal.length >= 2) {
     const direction =
-      moodTrendSignal[moodTrendSignal.length - 1] > moodTrendSignal[0]
-        ? "Improving"
-        : moodTrendSignal[moodTrendSignal.length - 1] < moodTrendSignal[0]
-        ? "Declining"
-        : "Steady";
-    cards.push({
-      id: "moodTrend",
-      title: "Mood Trend",
-      value: direction,
-      tone: "sage",
-      detail: <MoodTrendChart values={moodTrend} />,
-    });
+      moodTrendSignal[moodTrendSignal.length - 1] > moodTrendSignal[0] ? "Improving" : moodTrendSignal[moodTrendSignal.length - 1] < moodTrendSignal[0] ? "Declining" : "Steady";
+    cards.push({ id: "moodTrend", title: "Mood Trend", value: direction, tone: "accent", detail: <MoodTrendChart values={moodTrend} /> });
   }
 
   const costSessions = completed.filter((s) => typeof s.cost === "number");
@@ -149,9 +144,9 @@ export function computeInsights(sessions, people) {
       id: "spend",
       title: "Average Spend",
       value: `$${avgCost.toFixed(2)}`,
-      tone: "gold",
+      tone: "accent",
       detail: (
-        <p style={{ fontFamily: fontSans, color: theme.fade, fontSize: 13.5, lineHeight: 1.6 }}>
+        <p style={{ fontFamily: fontSans, color: theme.n600, fontSize: 13.5, lineHeight: 1.6 }}>
           ${monthTotal.toFixed(2)} this month across {thisMonthSessions.length} session{thisMonthSessions.length === 1 ? "" : "s"}.
         </p>
       ),
@@ -159,17 +154,15 @@ export function computeInsights(sessions, people) {
   }
 
   const nudges = [];
-  if (thisWeekCount >= 5) {
-    nudges.push({ tone: "rose", text: `${thisWeekCount} sessions in the last 7 days — might be worth a deliberate day off.` });
-  }
+  if (thisWeekCount >= 5) nudges.push({ text: `${thisWeekCount} sessions in the last 7 days — might be worth a deliberate day off.` });
   if (daysSinceLast !== null && daysSinceLast === 0 && completed.length >= 2) {
     const todayCount = completed.filter((s) => isSameDay(s.startTime, new Date())).length;
-    if (todayCount >= 2) nudges.push({ tone: "rose", text: `${todayCount} sessions today already.` });
+    if (todayCount >= 2) nudges.push({ text: `${todayCount} sessions today already.` });
   }
   if (completed.length >= 15) {
-    nudges.push({ tone: "sage", text: `You have enough history (${completed.length} sessions) for pattern predictions to start being reliable.` });
+    nudges.push({ text: `You have enough history (${completed.length} sessions) for pattern predictions to start being reliable.` });
   } else {
-    nudges.push({ tone: "sage", text: `${15 - completed.length} more sessions until predictions get more reliable.` });
+    nudges.push({ text: `${15 - completed.length} more sessions until predictions get more reliable.` });
   }
 
   return { cards, nudges };
