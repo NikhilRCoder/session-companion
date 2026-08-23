@@ -3,235 +3,213 @@ import { theme, fontDisplay, fontSans } from "../theme.js";
 import { getPeople, getFields } from "../storage.js";
 import { formatDuration, formatDate } from "../format.js";
 import { formatCoords, totalDistance, formatDistance } from "../geo.js";
+import { INTENTIONS, METHODS, ENVIRONMENTS, SCALE, REPEAT } from "../wizardSteps.js";
 import { TrackSketch } from "../components/TrackSketch.jsx";
-import { PRE_STEPS, POST_STEPS } from "../wizardSteps.js";
-import { Screen, Eyebrow, Card, StatRow, TextArea, PrimaryButton } from "../components/primitives.jsx";
-
-const optionsFor = (key) => (PRE_STEPS.find((s) => s.key === key) || POST_STEPS.find((s) => s.key === key))?.options || [];
+import {
+  Screen,
+  Slab,
+  SlabHead,
+  Ring,
+  Body,
+  Foot,
+  SectionRule,
+  Wrap,
+  Chip,
+  Card,
+  StatRow,
+  StatsGrid,
+  StatBox,
+  Tag,
+  TextArea,
+  Input,
+  Cta,
+} from "../components/primitives.jsx";
+import { CheckIcon } from "../components/icons.jsx";
 
 function MapLink({ point, children }) {
   return (
-    <a
-      href={`https://maps.google.com/?q=${point.lat},${point.lng}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ color: "inherit", textDecoration: "underline", textDecorationColor: theme.line }}
-    >
+    <a href={`https://maps.google.com/?q=${point.lat},${point.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline" }}>
       {children}
     </a>
   );
 }
 
-function EditChip({ label, selected, onTap }) {
-  return (
-    <button
-      onClick={onTap}
-      style={{
-        padding: "9px 14px",
-        borderRadius: 0,
-        fontFamily: fontSans,
-        fontSize: 13,
-        fontWeight: 600,
-        cursor: "pointer",
-        border: selected ? `1px solid ${theme.rose}` : `1px solid ${theme.line}`,
-        background: selected ? `${theme.rose}1a` : "transparent",
-        color: selected ? theme.rose : theme.fade,
-      }}
-    >
-      {label}
-    </button>
-  );
-}
-
 function EditField({ label, children }) {
   return (
-    <div style={{ marginBottom: 16 }}>
-      <Eyebrow>{label}</Eyebrow>
+    <div style={{ marginBottom: 18 }}>
+      <SectionRule ink>{label}</SectionRule>
       {children}
     </div>
   );
 }
 
-export function SessionSummary({ session, onDone, onEdit, onDelete }) {
+export function SessionSummary({ session, justFinished, onBack, onDone, onEdit, onDelete }) {
   const people = getPeople();
   const [isEditing, setIsEditing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [draft, setDraft] = useState(session);
-  const duration = session.endTime
-    ? formatDuration(new Date(session.endTime) - new Date(session.startTime))
-    : "—";
+  const duration = session.endTime ? formatDuration(new Date(session.endTime) - new Date(session.startTime)) : "—";
   const peopleNames = (session.peopleIds || []).map((id) => people.find((p) => p.id === id)?.name).filter(Boolean);
+  const checkinCount = session.checkins?.length || 0;
 
   if (isEditing) {
     return (
-      <Screen>
-        <div style={{ paddingTop: 18, marginBottom: 24 }}>
-          <Eyebrow>Editing</Eyebrow>
-          <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 600, color: theme.bone }}>Edit Session</h2>
-        </div>
-        <div style={{ flex: 1, overflowY: "auto" }}>
-          <EditField label="Format">
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {optionsFor("format").map((opt) => (
-                <EditChip key={opt} label={opt} selected={draft.format === opt} onTap={() => setDraft({ ...draft, format: opt })} />
+      <Screen noBottomPad>
+        <Slab>
+          <SlabHead kicker="Editing" onBack={() => setIsEditing(false)} />
+          <h2 style={{ fontFamily: fontDisplay, fontSize: 30, fontWeight: 700, textTransform: "uppercase", marginTop: 16, position: "relative" }}>
+            Edit session
+          </h2>
+        </Slab>
+        <Body>
+          <EditField label="Intention">
+            <Wrap>
+              {INTENTIONS.map((opt) => (
+                <Chip key={opt} label={opt} size="sm" selected={draft.intention === opt} onTap={() => setDraft({ ...draft, intention: opt })} />
               ))}
-            </div>
+            </Wrap>
           </EditField>
-          <EditField label="Setting">
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {optionsFor("setting").map((opt) => (
-                <EditChip key={opt} label={opt} selected={draft.setting === opt} onTap={() => setDraft({ ...draft, setting: opt })} />
+          <EditField label="Method">
+            <Wrap>
+              {METHODS.map((opt) => (
+                <Chip key={opt} label={opt} size="sm" selected={(draft.method || draft.format) === opt} onTap={() => setDraft({ ...draft, method: opt })} />
               ))}
-            </div>
+            </Wrap>
+          </EditField>
+          <EditField label="Environment">
+            <Wrap>
+              {ENVIRONMENTS.map((opt) => (
+                <Chip key={opt} label={opt} size="sm" selected={(draft.environment || draft.setting) === opt} onTap={() => setDraft({ ...draft, environment: opt })} />
+              ))}
+            </Wrap>
           </EditField>
           <EditField label="Place">
-            <input
-              value={draft.place || ""}
-              onChange={(e) => setDraft({ ...draft, place: e.target.value })}
-              placeholder="Type a place name..."
-              style={{
-                width: "100%",
-                background: theme.bgCard,
-                border: `1px solid ${theme.line}`,
-                borderRadius: 0,
-                padding: "13px 16px",
-                color: theme.bone,
-                fontSize: 15,
-                fontFamily: fontSans,
-                boxSizing: "border-box",
-              }}
-            />
+            <Input value={draft.place || ""} onChange={(e) => setDraft({ ...draft, place: e.target.value })} placeholder="Type a place name..." />
           </EditField>
-          <EditField label="Amount Spent">
-            <input
+          <EditField label="Amount spent">
+            <Input
               value={typeof draft.cost === "number" ? String(draft.cost) : ""}
-              onChange={(e) =>
-                setDraft({ ...draft, cost: e.target.value.trim() === "" ? undefined : Number(e.target.value) })
-              }
+              onChange={(e) => setDraft({ ...draft, cost: e.target.value.trim() === "" ? undefined : Number(e.target.value) })}
               placeholder="Amount spent (optional)"
               type="number"
               inputMode="decimal"
               step="0.01"
               min="0"
-              style={{
-                width: "100%",
-                background: theme.bgCard,
-                border: `1px solid ${theme.line}`,
-                borderRadius: 0,
-                padding: "13px 16px",
-                color: theme.bone,
-                fontSize: 15,
-                fontFamily: fontSans,
-                boxSizing: "border-box",
-              }}
             />
           </EditField>
-          <EditField label="Intensity">
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {optionsFor("intensity").map((opt) => (
-                <EditChip key={opt} label={opt} selected={draft.intensity === opt} onTap={() => setDraft({ ...draft, intensity: opt })} />
+          <EditField label="Overall rating">
+            <div style={{ display: "flex", gap: 6 }}>
+              {SCALE.map((opt) => (
+                <Chip key={opt} label={opt} size="sm" grow selected={draft.rating === opt} onTap={() => setDraft({ ...draft, rating: opt })} />
               ))}
             </div>
           </EditField>
-          <EditField label="Paranoia">
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {optionsFor("paranoia").map((opt) => (
-                <EditChip key={opt} label={opt} selected={draft.paranoia === opt} onTap={() => setDraft({ ...draft, paranoia: opt })} />
+          <EditField label="Would repeat">
+            <div style={{ display: "flex", gap: 6 }}>
+              {REPEAT.map((opt) => (
+                <Chip key={opt} label={opt} size="sm" grow selected={draft.repeat === opt} onTap={() => setDraft({ ...draft, repeat: opt })} />
               ))}
             </div>
-          </EditField>
-          <EditField label="Intention">
-            <TextArea value={draft.intention || ""} onChange={(e) => setDraft({ ...draft, intention: e.target.value })} rows={3} />
           </EditField>
           <EditField label="Notes">
             <TextArea value={draft.notes || ""} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} rows={3} />
+          </EditField>
+          <EditField label="Comedown">
+            <TextArea value={draft.comedownNotes || ""} onChange={(e) => setDraft({ ...draft, comedownNotes: e.target.value })} rows={3} />
           </EditField>
           <EditField label="Reflection">
             <TextArea value={draft.reflection || ""} onChange={(e) => setDraft({ ...draft, reflection: e.target.value })} rows={3} />
           </EditField>
           {Object.entries(draft.custom || {}).map(([fieldId, entry]) => {
             if (!entry?.label) return null;
-            const setValue = (value) =>
-              setDraft({ ...draft, custom: { ...draft.custom, [fieldId]: { ...entry, value } } });
-            const liveOptions =
-              entry.type === "yesno"
-                ? ["Yes", "No"]
-                : entry.type === "choice"
-                ? getFields().find((f) => f.id === fieldId)?.options
-                : null;
+            const setValue = (value) => setDraft({ ...draft, custom: { ...draft.custom, [fieldId]: { ...entry, value } } });
+            const liveOptions = entry.type === "yesno" ? ["Yes", "No"] : entry.type === "choice" ? getFields().find((f) => f.id === fieldId)?.options : null;
             return (
               <EditField key={fieldId} label={entry.label}>
                 {liveOptions ? (
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <Wrap>
                     {liveOptions.map((opt) => (
-                      <EditChip key={opt} label={opt} selected={entry.value === opt} onTap={() => setValue(opt)} />
+                      <Chip key={opt} label={opt} size="sm" selected={entry.value === opt} onTap={() => setValue(opt)} />
                     ))}
-                  </div>
+                  </Wrap>
                 ) : entry.type === "number" ? (
-                  <input
-                    value={typeof entry.value === "number" ? String(entry.value) : ""}
-                    onChange={(e) => setValue(e.target.value.trim() === "" ? undefined : Number(e.target.value))}
-                    type="number"
-                    inputMode="decimal"
-                    step="0.01"
-                    style={{
-                      width: "100%",
-                      background: theme.bgCard,
-                      border: `1px solid ${theme.line}`,
-                      borderRadius: 0,
-                      padding: "13px 16px",
-                      color: theme.bone,
-                      fontSize: 15,
-                      fontFamily: fontSans,
-                      boxSizing: "border-box",
-                    }}
-                  />
+                  <Input value={typeof entry.value === "number" ? String(entry.value) : ""} onChange={(e) => setValue(e.target.value.trim() === "" ? undefined : Number(e.target.value))} type="number" inputMode="decimal" step="0.01" />
                 ) : (
                   <TextArea value={entry.value || ""} onChange={(e) => setValue(e.target.value)} rows={3} />
                 )}
               </EditField>
             );
           })}
-        </div>
-        <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-          <PrimaryButton
-            tone="ghost"
-            onTap={() => {
-              setDraft(session);
-              setIsEditing(false);
-            }}
-            style={{ flex: 1 }}
-          >
-            Cancel
-          </PrimaryButton>
-          <PrimaryButton
-            tone="sage"
-            onTap={() => {
-              onEdit(draft);
-              setIsEditing(false);
-            }}
-            style={{ flex: 1 }}
-          >
-            Save Changes
-          </PrimaryButton>
-        </div>
+        </Body>
+        <Foot style={{ display: "flex", gap: 10 }}>
+          <Cta tone="ghost" onTap={() => { setDraft(session); setIsEditing(false); }} style={{ flex: 1, justifyContent: "center" }}>
+            <span>Cancel</span>
+          </Cta>
+          <Cta onTap={() => { onEdit(draft); setIsEditing(false); }} style={{ flex: 1, justifyContent: "center" }}>
+            <span>Save</span>
+          </Cta>
+        </Foot>
       </Screen>
     );
   }
 
   return (
-    <Screen>
-      <div style={{ paddingTop: 18, marginBottom: 24, textAlign: "center" }}>
-        <span style={{ fontSize: 32, display: "block", marginBottom: 10 }}>🌿</span>
-        <Eyebrow>Logged</Eyebrow>
-        <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 600, color: theme.bone }}>That's a wrap.</h2>
-      </div>
-      <div style={{ flex: 1, overflowY: "auto" }}>
+    <Screen noBottomPad>
+      {justFinished ? (
+        <Slab accent style={{ padding: "24px 20px 28px" }}>
+          <Ring style={{ right: -40, top: -40, width: 180, height: 180, color: theme.surface }} />
+          <div style={{ position: "relative", fontFamily: fontDisplay, fontSize: 11, fontWeight: 600, letterSpacing: "0.22em", textTransform: "uppercase", opacity: 0.85 }}>
+            Logged
+          </div>
+          <h2 style={{ fontFamily: fontDisplay, fontSize: 42, fontWeight: 700, textTransform: "uppercase", lineHeight: 0.95, marginTop: 10, position: "relative" }}>
+            Session
+            <br />
+            complete
+          </h2>
+          <div style={{ position: "relative", marginTop: 14, fontFamily: fontDisplay, fontSize: 14, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            {duration} — {checkinCount} check-in{checkinCount === 1 ? "" : "s"}
+          </div>
+        </Slab>
+      ) : (
+        <Slab>
+          <Ring style={{ top: -50, right: -30, width: 170, height: 170, color: theme.accent, opacity: 0.45 }} />
+          <SlabHead kicker={`${formatDate(session.startTime)} — ${duration}`} onBack={onBack} />
+          <h2 style={{ fontFamily: fontDisplay, fontSize: 34, fontWeight: 700, textTransform: "uppercase", lineHeight: 1, marginTop: 18, position: "relative" }}>
+            {session.intention || session.format || "Session"}
+            <br />
+            <span style={{ color: theme.accent }}>/</span> {session.method || session.setting || "—"}
+          </h2>
+        </Slab>
+      )}
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px 8px" }}>
+        <StatsGrid style={{ marginBottom: 18 }}>
+          <StatBox label="Rating" value={session.rating ? `${session.rating}/5` : "—"} />
+          <StatBox label="Met intention" value={session.metIntention || "—"} />
+          <StatBox label="Strain" value={session.strain || "—"} />
+          <StatBox label="Would repeat" value={session.repeat || "—"} />
+        </StatsGrid>
+        {(session.effects?.length || session.sideEffects?.length) ? (
+          <div style={{ marginBottom: 18 }}>
+            <SectionRule ink>Marked</SectionRule>
+            <Wrap>
+              {(session.effects || []).map((t) => (
+                <Tag key={`e-${t}`}>{t}</Tag>
+              ))}
+              {(session.sideEffects || []).map((t) => (
+                <Tag key={`s-${t}`} outlined>
+                  {t}
+                </Tag>
+              ))}
+            </Wrap>
+          </div>
+        ) : null}
         <Card>
           <StatRow label="Date" value={formatDate(session.startTime)} />
           <StatRow label="Duration" value={duration} />
-          {session.format && <StatRow label="Format" value={session.format} />}
-          {session.setting && <StatRow label="Setting" value={session.setting} />}
+          {session.dose && <StatRow label="Dose" value={`${session.dose} ${session.doseUnit || "mg"}`} />}
+          {(session.environment || session.setting) && <StatRow label="Environment" value={session.environment || session.setting} />}
+          {session.tolerance && <StatRow label="Tolerance" value={session.tolerance} />}
+          {session.baselineMood && <StatRow label="Baseline Mood" value={`${session.baselineMood}/5`} />}
           {session.place && <StatRow label="Place" value={session.place} />}
           {session.location && !(session.track?.length >= 2) && (
             <StatRow label="Location" value={<MapLink point={session.location}>{formatCoords(session.location)} ↗</MapLink>} />
@@ -240,92 +218,72 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
         </Card>
         {session.track?.length >= 2 && (
           <Card>
-            <Eyebrow>Movement</Eyebrow>
+            <SectionRule ink>Movement</SectionRule>
             <div style={{ marginTop: 10 }}>
               <TrackSketch track={session.track} />
               <StatRow label="Distance Moved" value={formatDistance(totalDistance(session.track))} />
               <StatRow label="Track Points" value={session.track.length} />
-              <StatRow
-                label="Start"
-                value={<MapLink point={session.track[0]}>{formatCoords(session.track[0])} ↗</MapLink>}
-              />
-              <StatRow
-                label="End"
-                value={
-                  <MapLink point={session.track[session.track.length - 1]}>
-                    {formatCoords(session.track[session.track.length - 1])} ↗
-                  </MapLink>
-                }
-              />
+              <StatRow label="Start" value={<MapLink point={session.track[0]}>{formatCoords(session.track[0])} ↗</MapLink>} />
+              <StatRow label="End" value={<MapLink point={session.track[session.track.length - 1]}>{formatCoords(session.track[session.track.length - 1])} ↗</MapLink>} />
+            </div>
+          </Card>
+        )}
+        {session.checkins?.length > 0 && (
+          <Card>
+            <SectionRule ink>Check-in Log</SectionRule>
+            <div style={{ marginTop: 8 }}>
+              {session.checkins.map((c, i) => (
+                <StatRow key={i} label={`${c.time} — ${c.symptoms?.length ? c.symptoms.join(", ") : "No symptoms"}`} value={`${c.intensity}/10`} />
+              ))}
             </div>
           </Card>
         )}
         {(session.moodsPre?.length || session.moodsPost?.length) ? (
           <Card>
-            <Eyebrow>Mood Shift</Eyebrow>
+            <SectionRule ink>Mood Shift</SectionRule>
             {session.moodsPre?.length > 0 && (
-              <p style={{ fontFamily: fontSans, color: theme.fade, fontSize: 14, marginTop: 8 }}>
-                Before — <span style={{ color: theme.bone }}>{session.moodsPre.join(", ")}</span>
-              </p>
+              <p style={{ fontFamily: fontSans, color: theme.n600, fontSize: 14, marginTop: 8 }}>Before — {session.moodsPre.join(", ")}</p>
             )}
             {session.moodsPost?.length > 0 && (
-              <p style={{ fontFamily: fontSans, color: theme.fade, fontSize: 14, marginTop: 6 }}>
-                After — <span style={{ color: theme.sage }}>{session.moodsPost.join(", ")}</span>
-              </p>
+              <p style={{ fontFamily: fontSans, color: theme.n600, fontSize: 14, marginTop: 6 }}>After — {session.moodsPost.join(", ")}</p>
             )}
           </Card>
         ) : null}
-        {session.intensity && (
-          <Card>
-            <StatRow label="Intensity" value={session.intensity} />
-            <StatRow label="Paranoia" value={session.paranoia} />
-          </Card>
-        )}
         {peopleNames.length > 0 && (
           <Card>
-            <Eyebrow tone="rose">People</Eyebrow>
+            <SectionRule ink>People</SectionRule>
             {peopleNames.map((name) => (
-              <StatRow
-                key={name}
-                label={name}
-                value={session.interactionQuality?.[(people.find((p) => p.name === name) || {}).id] || "—"}
-              />
+              <StatRow key={name} label={name} value={session.interactionQuality?.[(people.find((p) => p.name === name) || {}).id] || "—"} />
             ))}
-          </Card>
-        )}
-        {session.intention && (
-          <Card>
-            <Eyebrow>Intention</Eyebrow>
-            <p style={{ fontFamily: fontSans, color: theme.fade, fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>
-              {session.intention}
-            </p>
           </Card>
         )}
         {session.notes && (
           <Card>
-            <Eyebrow>Notes</Eyebrow>
-            <p style={{ fontFamily: fontSans, color: theme.fade, fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>
-              {session.notes}
-            </p>
+            <SectionRule ink>Notes</SectionRule>
+            <p style={{ fontFamily: fontSans, color: theme.n600, fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>{session.notes}</p>
+          </Card>
+        )}
+        {session.comedownNotes && (
+          <Card>
+            <SectionRule ink>Comedown</SectionRule>
+            <p style={{ fontFamily: fontSans, color: theme.n600, fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>{session.comedownNotes}</p>
           </Card>
         )}
         {session.reflection && (
           <Card>
-            <Eyebrow>Reflection</Eyebrow>
-            <p style={{ fontFamily: fontSans, color: theme.fade, fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>
-              {session.reflection}
-            </p>
+            <SectionRule ink>Reflection</SectionRule>
+            <p style={{ fontFamily: fontSans, color: theme.n600, fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>{session.reflection}</p>
           </Card>
         )}
         {session.custom && Object.keys(session.custom).length > 0 && (
           <Card>
-            <Eyebrow>Custom</Eyebrow>
+            <SectionRule ink>Custom</SectionRule>
             <div style={{ marginTop: 4 }}>
               {Object.entries(session.custom).map(([fieldId, entry]) => {
                 if (!entry?.label) return null;
                 return entry.type === "text" ? (
-                  <p key={fieldId} style={{ fontFamily: fontSans, color: theme.fade, fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>
-                    {entry.label} — <span style={{ color: theme.bone }}>{String(entry.value)}</span>
+                  <p key={fieldId} style={{ fontFamily: fontSans, color: theme.n600, fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>
+                    {entry.label} — {String(entry.value)}
                   </p>
                 ) : (
                   <StatRow key={fieldId} label={entry.label} value={String(entry.value)} />
@@ -334,43 +292,42 @@ export function SessionSummary({ session, onDone, onEdit, onDelete }) {
             </div>
           </Card>
         )}
-      </div>
-      {(onEdit || onDelete) && (
-        <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 4, marginBottom: 8 }}>
-          {onEdit && (
-            <button
-              onClick={() => setIsEditing(true)}
-              style={{ background: "none", border: "none", color: theme.faint, cursor: "pointer", fontSize: 13 }}
-            >
-              Edit
-            </button>
-          )}
-          {onDelete && !confirmingDelete && (
-            <button
-              onClick={() => setConfirmingDelete(true)}
-              style={{ background: "none", border: "none", color: theme.danger, cursor: "pointer", fontSize: 13 }}
-            >
-              Delete Session
-            </button>
-          )}
-        </div>
-      )}
-      <div style={{ marginTop: 12 }}>
-        {confirmingDelete ? (
-          <div style={{ display: "flex", gap: 10 }}>
-            <PrimaryButton tone="ghost" onTap={() => setConfirmingDelete(false)} style={{ flex: 1 }}>
-              Cancel
-            </PrimaryButton>
-            <PrimaryButton tone="danger" onTap={onDelete} style={{ flex: 1, borderColor: theme.danger }}>
-              Confirm Delete
-            </PrimaryButton>
+        {(onEdit || onDelete) && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 4, marginBottom: 16 }}>
+            {onEdit && (
+              <button onClick={() => setIsEditing(true)} style={{ background: "none", border: "none", color: theme.n600, cursor: "pointer", fontSize: 13, fontFamily: fontSans }}>
+                Edit
+              </button>
+            )}
+            {onDelete && !confirmingDelete && (
+              <button onClick={() => setConfirmingDelete(true)} style={{ background: "none", border: "none", color: theme.accent700, cursor: "pointer", fontSize: 13, fontFamily: fontSans }}>
+                Delete Session
+              </button>
+            )}
           </div>
-        ) : (
-          <PrimaryButton tone="sage" onTap={onDone}>
-            Done
-          </PrimaryButton>
         )}
       </div>
+      <Foot>
+        {confirmingDelete ? (
+          <div style={{ display: "flex", gap: 10 }}>
+            <Cta tone="ghost" onTap={() => setConfirmingDelete(false)} style={{ flex: 1, justifyContent: "center" }}>
+              <span>Cancel</span>
+            </Cta>
+            <Cta tone="danger" onTap={onDelete} style={{ flex: 1, justifyContent: "center" }}>
+              <span>Confirm Delete</span>
+            </Cta>
+          </div>
+        ) : justFinished ? (
+          <Cta onTap={onDone}>
+            <span>Back to home</span>
+            <CheckIcon />
+          </Cta>
+        ) : (
+          <Cta onTap={onDone}>
+            <span>Done</span>
+          </Cta>
+        )}
+      </Foot>
     </Screen>
   );
 }

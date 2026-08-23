@@ -6,15 +6,11 @@ const BASELINE_Y = 50;
 const HALF_PLOT = 34;
 const MAX_BAR_THICKNESS = 22;
 
-function roundedBar(x, width, height, direction) {
-  const radius = Math.min(4, height / 2, width / 2);
+function bar(x, width, height, direction) {
   if (height <= 0) return null;
-  if (direction === "up") {
-    const top = BASELINE_Y - height;
-    return `M${x},${BASELINE_Y} L${x},${top + radius} Q${x},${top} ${x + radius},${top} L${x + width - radius},${top} Q${x + width},${top} ${x + width},${top + radius} L${x + width},${BASELINE_Y} Z`;
-  }
-  const bottom = BASELINE_Y + height;
-  return `M${x},${BASELINE_Y} L${x},${bottom - radius} Q${x},${bottom} ${x + radius},${bottom} L${x + width - radius},${bottom} Q${x + width},${bottom} ${x + width},${bottom - radius} L${x + width},${BASELINE_Y} Z`;
+  return direction === "up"
+    ? `M${x},${BASELINE_Y} L${x},${BASELINE_Y - height} L${x + width},${BASELINE_Y - height} L${x + width},${BASELINE_Y} Z`
+    : `M${x},${BASELINE_Y} L${x},${BASELINE_Y + height} L${x + width},${BASELINE_Y + height} L${x + width},${BASELINE_Y} Z`;
 }
 
 export function MoodTrendChart({ values }) {
@@ -27,20 +23,13 @@ export function MoodTrendChart({ values }) {
   return (
     <div>
       <svg width="100%" viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`} role="img" aria-label="Mood trend over recent weeks">
-        <line x1="0" y1={BASELINE_Y} x2={VIEW_WIDTH} y2={BASELINE_Y} stroke={theme.line} strokeWidth="1" />
+        <line x1="0" y1={BASELINE_Y} x2={VIEW_WIDTH} y2={BASELINE_Y} stroke={theme.n400} strokeWidth="2" />
         {values.map((value, i) => {
           const x = i * slotWidth + (slotWidth - barWidth) / 2;
-          if (value === null) {
-            return <circle key={i} cx={x + barWidth / 2} cy={BASELINE_Y} r="2" fill={theme.faint} />;
-          }
-          if (value === 0) {
-            return <rect key={i} x={x} y={BASELINE_Y - 2} width={barWidth} height="4" rx="2" fill={theme.line} />;
-          }
+          if (value === null) return <circle key={i} cx={x + barWidth / 2} cy={BASELINE_Y} r="2" fill={theme.n500} />;
+          if (value === 0) return <rect key={i} x={x} y={BASELINE_Y - 2} width={barWidth} height="4" fill={theme.n400} />;
           const height = (Math.abs(value) / maxAbs) * HALF_PLOT;
-          const direction = value > 0 ? "up" : "down";
-          const path = roundedBar(x, barWidth, height, direction);
-          const fill = value > 0 ? theme.sage : theme.rose;
-          return <path key={i} d={path} fill={fill} style={{ filter: `drop-shadow(0 0 3px ${fill}66)` }} />;
+          return <path key={i} d={bar(x, barWidth, height, value > 0 ? "up" : "down")} fill={value > 0 ? theme.accent : theme.n700} />;
         })}
         {lastValue !== null && (
           <text
@@ -49,7 +38,7 @@ export function MoodTrendChart({ values }) {
             textAnchor="middle"
             fontFamily={fontSans}
             fontSize="9"
-            fill={theme.fade}
+            fill={theme.n600}
           >
             {lastValue > 0 ? "+" : ""}
             {lastValue.toFixed(1)}
@@ -57,8 +46,8 @@ export function MoodTrendChart({ values }) {
         )}
       </svg>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
-        <span style={{ fontFamily: fontSans, fontSize: 10, color: theme.faint }}>{values.length} wks ago</span>
-        <span style={{ fontFamily: fontSans, fontSize: 10, color: theme.faint }}>now</span>
+        <span style={{ fontFamily: fontSans, fontSize: 10, color: theme.n600 }}>{values.length} wks ago</span>
+        <span style={{ fontFamily: fontSans, fontSize: 10, color: theme.n600 }}>now</span>
       </div>
     </div>
   );

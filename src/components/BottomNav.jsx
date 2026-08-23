@@ -1,4 +1,4 @@
-import { theme, fontMono } from "../theme.js";
+import { theme, fontDisplay } from "../theme.js";
 import { vibrate } from "../storage.js";
 
 const TABS = [
@@ -12,13 +12,11 @@ export function BottomNav({ active, onChange }) {
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
-        gap: 1,
-        background: theme.line,
-        borderTop: `1px solid ${theme.line}`,
-        boxShadow: "0 -8px 24px rgba(0,0,0,.35)",
-        paddingBottom: 0,
+        display: "flex",
+        borderTop: `2px solid ${theme.ink}`,
+        background: theme.surface,
+        paddingBottom: "max(8px, env(safe-area-inset-bottom))",
+        paddingTop: 8,
       }}
     >
       {TABS.map((tab) => (
@@ -29,26 +27,26 @@ export function BottomNav({ active, onChange }) {
             onChange(tab.id);
           }}
           style={{
-            background: theme.bg,
+            flex: 1,
+            background: "none",
             border: "none",
-            borderTop: `2px solid ${active === tab.id ? theme.sage : "transparent"}`,
             cursor: "pointer",
-            padding: "9px 0 max(10px, env(safe-area-inset-bottom))",
+            padding: "6px 0",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             gap: 3,
           }}
         >
-          <span style={{ fontSize: 16, color: active === tab.id ? theme.sage : theme.faint }}>{tab.icon}</span>
+          <span style={{ fontSize: 17, color: active === tab.id ? theme.accent : theme.n500 }}>{tab.icon}</span>
           <span
             style={{
-              fontFamily: fontMono,
-              fontSize: 9.5,
-              fontWeight: 500,
-              color: active === tab.id ? theme.sage : theme.faint,
-              letterSpacing: 1.5,
+              fontFamily: fontDisplay,
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
               textTransform: "uppercase",
+              color: active === tab.id ? theme.accent : theme.n500,
             }}
           >
             {tab.label}

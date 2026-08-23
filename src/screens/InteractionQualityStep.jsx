@@ -1,60 +1,42 @@
-import { theme, fontDisplay, fontSans } from "../theme.js";
-import { getPeople, vibrate } from "../storage.js";
+import { theme, fontDisplay } from "../theme.js";
+import { getPeople } from "../storage.js";
 import { QUALITY_OPTIONS } from "../wizardSteps.js";
-import { Screen, BackLink, Eyebrow, Card, PrimaryButton } from "../components/primitives.jsx";
+import { Screen, Slab, SlabHead, Hatch, Body, Foot, Card, SectionRule, Wrap, Chip, Cta } from "../components/primitives.jsx";
+import { Arrow } from "../components/icons.jsx";
 
 export function InteractionQualityStep({ peopleIds, quality, setQuality, onBack, onNext }) {
   const people = getPeople().filter((p) => peopleIds.includes(p.id));
   const allAnswered = people.every((p) => quality[p.id]);
 
   return (
-    <Screen>
-      <BackLink onBack={onBack} />
-      <div style={{ marginBottom: 24, textAlign: "center" }}>
-        <span style={{ fontSize: 28, color: theme.roseDim, display: "block", marginBottom: 10 }}>◍</span>
-        <Eyebrow tone="rose">Checking In</Eyebrow>
-        <h2 style={{ fontFamily: fontDisplay, fontSize: 25, fontWeight: 600, color: theme.bone }}>
-          How did it feel with each person?
+    <Screen noBottomPad>
+      <Slab>
+        <Hatch />
+        <SlabHead kicker="Debrief" onBack={onBack} />
+        <h2 style={{ fontFamily: fontDisplay, fontSize: 32, fontWeight: 700, textTransform: "uppercase", lineHeight: 1, marginTop: 18, position: "relative" }}>
+          How did it feel
+          <br />
+          with each person?
         </h2>
-      </div>
-      <div style={{ flex: 1, overflowY: "auto" }}>
+      </Slab>
+      <Body>
         {people.map((person) => (
-          <Card key={person.id}>
-            <p style={{ fontFamily: fontSans, color: theme.bone, fontSize: 15, fontWeight: 700, marginBottom: 10 }}>
-              {person.name}
-            </p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Card key={person.id} style={{ marginBottom: 0 }}>
+            <SectionRule ink>{person.name}</SectionRule>
+            <Wrap>
               {QUALITY_OPTIONS.map((option) => (
-                <button
-                  key={option}
-                  onClick={() => {
-                    vibrate();
-                    setQuality({ ...quality, [person.id]: option });
-                  }}
-                  style={{
-                    padding: "9px 14px",
-                    borderRadius: 0,
-                    fontFamily: fontSans,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    border: quality[person.id] === option ? `1px solid ${theme.rose}` : `1px solid ${theme.line}`,
-                    background: quality[person.id] === option ? `${theme.rose}1a` : "transparent",
-                    color: quality[person.id] === option ? theme.rose : theme.fade,
-                  }}
-                >
-                  {option}
-                </button>
+                <Chip key={option} label={option} size="sm" selected={quality[person.id] === option} onTap={() => setQuality({ ...quality, [person.id]: option })} />
               ))}
-            </div>
+            </Wrap>
           </Card>
         ))}
-      </div>
-      <div style={{ marginTop: 18 }}>
-        <PrimaryButton tone="rose" disabled={!allAnswered} onTap={onNext}>
-          Continue
-        </PrimaryButton>
-      </div>
+      </Body>
+      <Foot>
+        <Cta onTap={onNext} disabled={!allAnswered}>
+          <span>Continue</span>
+          <Arrow />
+        </Cta>
+      </Foot>
     </Screen>
   );
 }

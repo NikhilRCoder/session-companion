@@ -1,39 +1,24 @@
-import { theme, fontDisplay, fontSans } from "../theme.js";
-import { Screen, BackLink, Eyebrow, TextArea, PrimaryButton } from "../components/primitives.jsx";
+import { theme, fontDisplay } from "../theme.js";
+import { Screen, Slab, SlabHead, Hatch, Body, Foot, TextArea, Cta } from "../components/primitives.jsx";
 
-export function TextPromptStep({ value, onChange, onBack, onNext, icon, eyebrow, title, placeholder, buttonLabel, tone = "sage" }) {
+export function TextPromptStep({ value, onChange, onBack, onNext, kicker, title, placeholder, buttonLabel }) {
   return (
-    <Screen>
-      <BackLink onBack={onBack} />
-      <div style={{ marginBottom: 24, textAlign: "center" }}>
-        <span
-          style={{
-            fontSize: 28,
-            color: tone === "rose" ? theme.roseDim : theme.sageDim,
-            display: "block",
-            marginBottom: 10,
-          }}
-        >
-          {icon}
-        </span>
-        <Eyebrow tone={tone}>{eyebrow}</Eyebrow>
-        <h2 style={{ fontFamily: fontDisplay, fontSize: 25, fontWeight: 600, color: theme.bone }}>
-          {title} <span style={{ color: theme.faint, fontSize: 15, fontFamily: fontSans }}>(optional)</span>
+    <Screen noBottomPad>
+      <Slab>
+        <Hatch />
+        <SlabHead kicker={kicker} onBack={onBack} />
+        <h2 style={{ fontFamily: fontDisplay, fontSize: 32, fontWeight: 700, textTransform: "uppercase", lineHeight: 1, marginTop: 18, position: "relative" }}>
+          {title} <span style={{ color: theme.n400 }}>(optional)</span>
         </h2>
-      </div>
-      <TextArea
-        autoFocus
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={5}
-        style={{ marginBottom: 20 }}
-      />
-      <div style={{ marginTop: "auto" }}>
-        <PrimaryButton tone={tone} onTap={onNext}>
-          {buttonLabel}
-        </PrimaryButton>
-      </div>
+      </Slab>
+      <Body>
+        <TextArea autoFocus value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} rows={6} />
+      </Body>
+      <Foot>
+        <Cta onTap={onNext}>
+          <span>{buttonLabel}</span>
+        </Cta>
+      </Foot>
     </Screen>
   );
 }

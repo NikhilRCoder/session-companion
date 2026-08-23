@@ -5,7 +5,7 @@ import { computeInsights } from "../insights.jsx";
 import { formatDuration } from "../format.js";
 import { totalDistance, formatDistance } from "../geo.js";
 import { countSince } from "../stats.js";
-import { Screen, Eyebrow, Card, StatGrid, StatBox } from "../components/primitives.jsx";
+import { Screen, Slab, Hatch, Body, SectionRule, Card, StatsGrid, StatBox } from "../components/primitives.jsx";
 import { CalendarHeatmap } from "../components/CalendarHeatmap.jsx";
 
 const mostCommon = (values) => {
@@ -24,87 +24,62 @@ export function InsightsScreen() {
   if (sessions.length === 0) {
     return (
       <Screen>
-        <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 700, color: theme.bone, marginTop: 14, marginBottom: 18 }}>
+        <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 700, textTransform: "uppercase", color: theme.ink, marginTop: 14, marginBottom: 18 }}>
           Insights
         </h2>
-        <p style={{ fontFamily: fontSans, color: theme.faint, textAlign: "center", marginTop: 60 }}>
-          Log a few sessions and patterns will show up here.
-        </p>
+        <p style={{ fontFamily: fontSans, color: theme.n600, textAlign: "center", marginTop: 60 }}>Log a few sessions and patterns will show up here.</p>
       </Screen>
     );
   }
 
   const finished = sessions.filter((s) => s.endTime);
-  const avgDurationMs = finished.length
-    ? finished.reduce((sum, s) => sum + (new Date(s.endTime) - new Date(s.startTime)), 0) / finished.length
-    : 0;
+  const avgDurationMs = finished.length ? finished.reduce((sum, s) => sum + (new Date(s.endTime) - new Date(s.startTime)), 0) / finished.length : 0;
   const spends = sessions.filter((s) => typeof s.cost === "number");
   const totalSpend = spends.reduce((sum, s) => sum + s.cost, 0);
   const distance = sessions.reduce((sum, s) => sum + (s.track?.length >= 2 ? totalDistance(s.track) : 0), 0);
 
   return (
-    <Screen>
-      <h2 style={{ fontFamily: fontDisplay, fontSize: 27, fontWeight: 700, color: theme.bone, marginTop: 14, marginBottom: 18 }}>
-        Insights
-      </h2>
-      <div style={{ flex: 1, overflowY: "auto" }}>
-        <StatGrid>
-          <StatBox label="This Week" value={countSince(sessions, 7)} accent={theme.sage} icon="◒" />
-          <StatBox label="This Month" value={countSince(sessions, 30)} accent={theme.sage} icon="◓" />
-          <StatBox label="Avg Duration" value={avgDurationMs ? formatDuration(avgDurationMs) : "—"} accent={theme.gold} icon="◷" />
-          <StatBox label="Total Logged" value={sessions.length} accent={theme.fade} icon="▣" />
-          <StatBox label="Total Spend" value={spends.length ? `$${totalSpend.toFixed(0)}` : "—"} accent={theme.gold} icon="◈" />
-          <StatBox
-            label="Avg Spend"
-            value={spends.length ? `$${(totalSpend / spends.length).toFixed(2)}` : "—"}
-            sub={spends.length ? `${spends.length} tracked` : undefined}
-            accent={theme.gold}
-            icon="◈"
-          />
-          <StatBox label="Top Format" value={mostCommon(sessions.map((s) => s.format))} accent={theme.sage} icon="◆" />
-          <StatBox label="Top Place" value={mostCommon(sessions.map((s) => s.place))} accent={theme.rose} icon="◍" />
-          {distance > 0 && (
-            <StatBox
-              label="Distance Moved"
-              value={formatDistance(distance)}
-              span={2}
-              sub="across tracked sessions"
-              accent={theme.sage}
-              icon="→"
-            />
-          )}
-        </StatGrid>
-        <Card>
-          <Eyebrow>Frequency</Eyebrow>
-          <div style={{ marginTop: 10 }}>
-            <CalendarHeatmap sessions={sessions} />
-          </div>
-        </Card>
+    <Screen noBottomPad>
+      <Slab>
+        <Hatch />
+        <h2 style={{ fontFamily: fontDisplay, fontSize: 34, fontWeight: 700, textTransform: "uppercase", position: "relative" }}>Insights</h2>
+      </Slab>
+      <Body style={{ gap: 20, overflowY: "auto" }}>
+        <StatsGrid>
+          <StatBox label="This Week" value={countSince(sessions, 7)} />
+          <StatBox label="This Month" value={countSince(sessions, 30)} />
+          <StatBox label="Avg Duration" value={avgDurationMs ? formatDuration(avgDurationMs) : "—"} />
+          <StatBox label="Total Logged" value={sessions.length} />
+          <StatBox label="Total Spend" value={spends.length ? `$${totalSpend.toFixed(0)}` : "—"} />
+          <StatBox label="Avg Spend" value={spends.length ? `$${(totalSpend / spends.length).toFixed(2)}` : "—"} />
+          <StatBox label="Top Method" value={mostCommon(sessions.map((s) => s.method || s.format))} />
+          <StatBox label="Top Place" value={mostCommon(sessions.map((s) => s.place))} />
+          {distance > 0 && <StatBox label="Distance Moved" value={formatDistance(distance)} span={2} />}
+        </StatsGrid>
+        <div>
+          <SectionRule ink>Frequency</SectionRule>
+          <CalendarHeatmap sessions={sessions} />
+        </div>
         {nudges.map((nudge, i) => (
-          <Card key={i} style={{ borderColor: nudge.tone === "rose" ? theme.roseDim : theme.sageDim }}>
-            <p style={{ fontFamily: fontSans, fontSize: 13.5, color: nudge.tone === "rose" ? theme.rose : theme.sage, fontWeight: 600 }}>
-              {nudge.text}
-            </p>
+          <Card key={i}>
+            <p style={{ fontFamily: fontSans, fontSize: 13.5, color: theme.accent700, fontWeight: 600 }}>{nudge.text}</p>
           </Card>
         ))}
         {cards.map((card) => (
           <Card key={card.id}>
-            <button
-              onClick={() => setExpandedId(expandedId === card.id ? null : card.id)}
-              style={{ width: "100%", background: "none", border: "none", padding: 0, textAlign: "left", cursor: "pointer" }}
-            >
+            <button onClick={() => setExpandedId(expandedId === card.id ? null : card.id)} style={{ width: "100%", background: "none", border: "none", padding: 0, textAlign: "left", cursor: "pointer" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <Eyebrow tone={card.tone === "rose" ? "rose" : "sage"}>{card.title}</Eyebrow>
-                  <p style={{ fontFamily: fontDisplay, fontSize: 22, color: theme.bone, fontWeight: 700 }}>{card.value}</p>
+                  <SectionRule>{card.title}</SectionRule>
+                  <p style={{ fontFamily: fontDisplay, fontSize: 22, color: theme.ink, fontWeight: 700, textTransform: "uppercase" }}>{card.value}</p>
                 </div>
-                <span style={{ color: theme.faint, fontSize: 18 }}>{expandedId === card.id ? "−" : "+"}</span>
+                <span style={{ color: theme.n600, fontSize: 18 }}>{expandedId === card.id ? "−" : "+"}</span>
               </div>
             </button>
             {expandedId === card.id && <div style={{ marginTop: 14 }}>{card.detail}</div>}
           </Card>
         ))}
-      </div>
+      </Body>
     </Screen>
   );
 }
