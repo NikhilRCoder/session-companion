@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { googleFontsUrl, theme } from "./theme.js";
-import { getLiveSession, setLiveSession as persistLiveSession, getSessions, saveSessions, getFields, makeId } from "./storage.js";
+import { getLiveSession, setLiveSession as persistLiveSession, getSessions, saveSessions, getFields, getBreakState, setBreakState, makeId } from "./storage.js";
 import { captureLocation, toPoint, distanceMeters } from "./geo.js";
+import { daysSince } from "./format.js";
 import { splitCustomAnswers } from "./customFields.js";
 import { BottomNav } from "./components/BottomNav.jsx";
 import { PreStep1 } from "./screens/PreStep1.jsx";
@@ -92,14 +93,17 @@ export default function App() {
 
   const beginSession = () => {
     const { rest, custom } = splitCustomAnswers(preAnswers, PRE_KEYS, getFields());
+    const activeBreak = getBreakState();
     const live = {
       ...rest,
       peopleIds,
       notes: "",
       checkins: [],
       ...(Object.keys(custom).length ? { custom } : {}),
+      ...(activeBreak ? { breakDays: daysSince(activeBreak.startedAt) } : {}),
       startTime: new Date().toISOString(),
     };
+    if (activeBreak) setBreakState(null);
     setLiveSessionState(live);
     setScreen("active");
     captureLocation().then((location) => {
@@ -155,7 +159,15 @@ export default function App() {
 
   let body;
   if (screen === "pre1") {
-    body = <PreStep1 answers={preAnswers} setAnswers={setPreAnswers} onBack={() => setScreen("home")} onNext={() => setScreen("peoplePick")} />;
+    body = (
+      <PreStep1
+        answers={preAnswers}
+        setAnswers={setPreAnswers}
+        breakState={getBreakState()}
+        onBack={() => setScreen("home")}
+        onNext={() => setScreen("peoplePick")}
+      />
+    );
   } else if (screen === "peoplePick") {
     body = <PeoplePickerStep peopleIds={peopleIds} setPeopleIds={setPeopleIds} onBack={() => setScreen("pre1")} onNext={() => setScreen("pre2")} />;
   } else if (screen === "pre2") {

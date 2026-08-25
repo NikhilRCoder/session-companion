@@ -1,9 +1,10 @@
-import { theme, fontDisplay } from "../theme.js";
+import { theme, fontDisplay, fontSans } from "../theme.js";
 import { INTENTIONS, METHODS } from "../wizardSteps.js";
-import { Screen, Slab, SlabHead, Hatch, Body, Foot, SectionRule, Wrap, Chip, Input, Cta } from "../components/primitives.jsx";
+import { daysSince } from "../format.js";
+import { Screen, Slab, SlabHead, Hatch, Body, Foot, SectionRule, Wrap, Chip, Input, Card, Cta } from "../components/primitives.jsx";
 import { Arrow } from "../components/icons.jsx";
 
-export function PreStep1({ answers, setAnswers, onBack, onNext }) {
+export function PreStep1({ answers, setAnswers, breakState, onBack, onNext }) {
   const set = (key, value) => setAnswers({ ...answers, [key]: value });
   const invalid = !(answers.intention && answers.method);
 
@@ -19,6 +20,13 @@ export function PreStep1({ answers, setAnswers, onBack, onNext }) {
         </h2>
       </Slab>
       <Body>
+        {breakState && (
+          <Card style={{ borderColor: theme.accent, marginBottom: 0 }}>
+            <p style={{ fontFamily: fontSans, color: theme.accent700, fontSize: 13.5, fontWeight: 600, lineHeight: 1.5 }}>
+              Day {daysSince(breakState.startedAt)} since your last session. You may be more sensitive than usual — consider starting with a lower dose.
+            </p>
+          </Card>
+        )}
         <div>
           <SectionRule>Intention</SectionRule>
           <Wrap>

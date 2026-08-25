@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { theme, fontDisplay, fontSans, chamfer } from "../theme.js";
-import { getSessions } from "../storage.js";
+import { getSessions, getBreakState, setBreakState } from "../storage.js";
 import { isSameDay } from "../format.js";
 import { daysSinceLast, longestBreak, countSince, avgPerWeek } from "../stats.js";
 import { Screen, Slab, Hatch, Ring, Dia, Card, StatsGrid, StatBox } from "../components/primitives.jsx";
 import { EntryRow } from "../components/EntryRow.jsx";
+import { BreakCard } from "../components/BreakCard.jsx";
 import { Arrow, ClockIcon } from "../components/icons.jsx";
 
 function greeting() {
@@ -20,6 +22,16 @@ export function HomeScreen({ onStart, onHistory, onSettings }) {
   const sinceLast = daysSinceLast(sessions);
   const longest = longestBreak(sessions);
   const [line1, line2] = greeting().split("\n");
+  const [breakState, setBreakStateLocal] = useState(getBreakState());
+  const startBreak = () => {
+    const value = { startedAt: new Date().toISOString() };
+    setBreakState(value);
+    setBreakStateLocal(value);
+  };
+  const endBreak = () => {
+    setBreakState(null);
+    setBreakStateLocal(null);
+  };
 
   return (
     <Screen noBottomPad>
@@ -92,6 +104,7 @@ export function HomeScreen({ onStart, onHistory, onSettings }) {
             <StatBox label="Avg / Week" value={avgPerWeek(sessions).toFixed(1)} />
           </StatsGrid>
         )}
+        <BreakCard breakState={breakState} longestPastBreak={longest} onStart={startBreak} onEnd={endBreak} />
         {todayCount >= 2 && (
           <Card style={{ borderColor: theme.accent }}>
             <p style={{ fontFamily: fontSans, color: theme.accent700, fontSize: 13.5, fontWeight: 600 }}>
