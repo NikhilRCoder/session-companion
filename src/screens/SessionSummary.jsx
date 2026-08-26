@@ -206,6 +206,9 @@ export function SessionSummary({ session, justFinished, onBack, onDone, onEdit, 
         <Card>
           <StatRow label="Date" value={formatDate(session.startTime)} />
           <StatRow label="Duration" value={duration} />
+          {typeof session.breakDays === "number" && (
+            <StatRow label="Ended Break" value={`${session.breakDays} day${session.breakDays === 1 ? "" : "s"}`} />
+          )}
           {session.dose && <StatRow label="Dose" value={`${session.dose} ${session.doseUnit || "mg"}`} />}
           {(session.environment || session.setting) && <StatRow label="Environment" value={session.environment || session.setting} />}
           {session.tolerance && <StatRow label="Tolerance" value={session.tolerance} />}
