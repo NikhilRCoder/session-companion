@@ -5,6 +5,7 @@ export const KEYS = {
   live: "sc_live_v3",
   fields: "sc_fields_v1",
   breakState: "sc_break_v1",
+  lock: "sc_lock_v1",
 };
 
 export const safeStorage = {
@@ -51,6 +52,10 @@ export const setLiveSession = (value) =>
 export const getBreakState = () => safeStorage.get(KEYS.breakState, null);
 export const setBreakState = (value) =>
   value === null ? localStorage.removeItem(KEYS.breakState) : safeStorage.set(KEYS.breakState, value);
+
+export const getLockState = () => safeStorage.get(KEYS.lock, null);
+export const setLockState = (value) =>
+  value === null ? localStorage.removeItem(KEYS.lock) : safeStorage.set(KEYS.lock, value);
 
 export const vibrate = (pattern = 8) => {
   try {

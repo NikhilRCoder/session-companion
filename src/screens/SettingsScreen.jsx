@@ -1,12 +1,13 @@
 import { useState, useRef } from "react";
 import { theme, fontDisplay, fontSans } from "../theme.js";
-import { getPlaces, savePlaces } from "../storage.js";
+import { getPlaces, savePlaces, getLockState } from "../storage.js";
 import { exportBackup, importBackup } from "../backup.js";
 import { Screen, Slab, SlabHead, Body, SectionRule, Card, Cta } from "../components/primitives.jsx";
 import { CustomFieldsCard } from "./CustomFieldsCard.jsx";
 
-export function SettingsScreen({ onBack }) {
+export function SettingsScreen({ onBack, onManageLock }) {
   const [places, setPlaces] = useState(getPlaces());
+  const lockState = getLockState();
   const [status, setStatus] = useState("");
   const fileInputRef = useRef(null);
 
@@ -49,6 +50,15 @@ export function SettingsScreen({ onBack }) {
             />
             {status && <p style={{ fontFamily: fontSans, fontSize: 12.5, color: theme.accent700, textAlign: "center" }}>{status}</p>}
           </div>
+        </Card>
+        <Card>
+          <SectionRule ink>App Lock</SectionRule>
+          <p style={{ fontFamily: fontSans, color: theme.n600, fontSize: 13.5, marginTop: 6, marginBottom: 14, lineHeight: 1.6 }}>
+            {lockState?.enabled ? "On — a PIN is required each time you return to the app." : "Off — require a 4-digit PIN to open the app."}
+          </p>
+          <Cta tone="ghost" onTap={onManageLock}>
+            <span>Manage</span>
+          </Cta>
         </Card>
         <CustomFieldsCard />
         <Card>

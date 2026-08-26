@@ -1,10 +1,22 @@
 import { useState, useEffect } from "react";
 import { googleFontsUrl, theme } from "./theme.js";
-import { getLiveSession, setLiveSession as persistLiveSession, getSessions, saveSessions, getFields, getBreakState, setBreakState, makeId } from "./storage.js";
+import {
+  getLiveSession,
+  setLiveSession as persistLiveSession,
+  getSessions,
+  saveSessions,
+  getFields,
+  getBreakState,
+  setBreakState,
+  getLockState,
+  makeId,
+} from "./storage.js";
 import { captureLocation, toPoint, distanceMeters } from "./geo.js";
 import { daysSince } from "./format.js";
 import { splitCustomAnswers } from "./customFields.js";
 import { BottomNav } from "./components/BottomNav.jsx";
+import { LockScreen } from "./screens/LockScreen.jsx";
+import { LockSettingsScreen } from "./screens/LockSettingsScreen.jsx";
 import { PreStep1 } from "./screens/PreStep1.jsx";
 import { PreStep2 } from "./screens/PreStep2.jsx";
 import { PostStep1 } from "./screens/PostStep1.jsx";
@@ -24,7 +36,7 @@ import { InsightsScreen } from "./screens/InsightsScreen.jsx";
 const PRE_KEYS = ["intention", "method", "strain", "dose", "doseUnit", "tolerance", "baselineMood", "environment", "physical"];
 const POST_KEYS = ["rating", "effects", "metIntention", "sideEffects", "comedownNotes", "repeat"];
 
-const HIDDEN_NAV_SCREENS = ["pre1", "peoplePick", "pre2", "active", "post1", "post2", "interactionQuality", "place", "reflection", "summary", "settings"];
+const HIDDEN_NAV_SCREENS = ["pre1", "peoplePick", "pre2", "active", "post1", "post2", "interactionQuality", "place", "reflection", "summary", "settings", "lockSettings"];
 
 export default function App() {
   const resumedLive = getLiveSession();
@@ -40,6 +52,7 @@ export default function App() {
   const [reflection, setReflection] = useState("");
   const [finalSeconds, setFinalSeconds] = useState(0);
   const [completedSession, setCompletedSession] = useState(null);
+  const [locked, setLocked] = useState(() => !!getLockState()?.enabled);
 
   useEffect(() => {
     const wizardInProgress = ["pre1", "peoplePick", "pre2"].includes(screen);
@@ -84,6 +97,14 @@ export default function App() {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [hasLiveSession]);
+
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden" && getLockState()?.enabled) setLocked(true);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
 
   const startWizard = () => {
     setPreAnswers({});
@@ -225,7 +246,9 @@ export default function App() {
   } else if (screen === "summary" && completedSession) {
     body = <SessionSummary session={completedSession} justFinished onDone={doneSummary} />;
   } else if (screen === "settings") {
-    body = <SettingsScreen onBack={() => setScreen("home")} />;
+    body = <SettingsScreen onBack={() => setScreen("home")} onManageLock={() => setScreen("lockSettings")} />;
+  } else if (screen === "lockSettings") {
+    body = <LockSettingsScreen onBack={() => setScreen("settings")} />;
   } else if (tab === "home") {
     body = <HomeScreen onStart={startWizard} onHistory={() => setTab("history")} onSettings={() => setScreen("settings")} />;
   } else if (tab === "history") {
@@ -257,6 +280,7 @@ export default function App() {
         textarea, button, input { outline: none; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 0px; }
         @keyframes sc-blink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+        @keyframes sc-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
       `}</style>
       <div
         style={{
@@ -268,17 +292,25 @@ export default function App() {
           backgroundSize: "34px 34px",
         }}
       />
-      <div style={{ position: "relative", zIndex: 1, flex: 1, overflowY: "auto" }}>{body}</div>
-      {showBottomNav && (
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <BottomNav
-            active={tab}
-            onChange={(newTab) => {
-              setTab(newTab);
-              setScreen(newTab === "home" ? "home" : screen);
-            }}
-          />
+      {locked ? (
+        <div style={{ position: "relative", zIndex: 1, flex: 1 }}>
+          <LockScreen onUnlock={() => setLocked(false)} />
         </div>
+      ) : (
+        <>
+          <div style={{ position: "relative", zIndex: 1, flex: 1, overflowY: "auto" }}>{body}</div>
+          {showBottomNav && (
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <BottomNav
+                active={tab}
+                onChange={(newTab) => {
+                  setTab(newTab);
+                  setScreen(newTab === "home" ? "home" : screen);
+                }}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );
